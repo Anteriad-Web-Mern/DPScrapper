@@ -27,7 +27,7 @@
             <th>Users</th>
             <th>Blogs</th>
             <th>Resources</th>
-            <th>Thank-You Pages</th>
+            <th>Thank You Pages</th>
           </tr>
         </thead>
         <tbody>
@@ -40,6 +40,7 @@
           </tr>
         </tbody>
       </table>
+
       {% if analytics %}
       <h2 class="text-xl font-bold mt-6">Analytics</h2>
       <ul>
@@ -50,6 +51,46 @@
         {% endfor %}
       </ul>
       {% endif %}
+
+      <canvas id="analyticsChart" width="400" height="200"></canvas>
+      <script>
+        const ctx = document.getElementById('analyticsChart').getContext('2d');
+        const chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Users', 'Blogs', 'Resources', 'Thank-You Pages'],
+            datasets: [{
+              label: '{{ result.domain }}',
+              data: [
+                {{ result.users | default(0) | int }},
+                {{ result.blogs | default(0) | int }},
+                {{ result.resources | default (0) | int }},
+                {{ result.thank_you | default (0) | int }}],
+
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)'
+        ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)'
+          ],
+            borderWidth: 1
+            }]
+          },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+        });
+      </script>
       {% else %}
       <h1 class="text-2xl font-bold mb-4">Summary of All Domains</h1>
       {% if summary %}
