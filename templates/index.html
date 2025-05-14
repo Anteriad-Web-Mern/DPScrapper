@@ -1,0 +1,29 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraping Dashboard</title>
+    <link rel="stylesheet" href="../static/styles/global.css">
+    <script src="../static/components/header.js" defer></script>
+    <script src="../static/components/sidebar.js" defer></script>
+    <script src="../static/components/footer.js" defer></script>
+</head>
+<body>
+    <app-header></app-header>
+    <div class="container">
+        <app-sidebar></app-sidebar>
+        <main>
+            <h1 class="text-2xl font-bold mb-4">Welcome to Scraping Dashboard</h1>
+            <section id="cards-container" class="grid grid-cols-3 gap-4">
+                <app-card title="Total Scrapes" value="120"></app-card>
+                <app-card title="Active Tasks" value="5"></app-card>
+                <app-card title="Completed Tasks" value="115"></app-card>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
+

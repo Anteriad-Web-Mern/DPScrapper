@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization</title>
+    <link rel="stylesheet" href="../static/styles/global.css">
+    <script src="../static/components/header.js" defer></script>
+    <script src="../static/components/sidebar.js" defer></script>
+    <script src="../static/components/footer.js" defer></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <style>
+        body {
+            @apply bg-gray-100 font-sans;
+        }
+        .container {
+            @apply max-w-7xl bg-white p-6 rounded-xl shadow-lg mx-auto mt-10;
+        }
+        .graph-container {
+            @apply p-5 rounded-lg bg-gray-50 shadow;
+        }
+        .btn {
+            @apply bg-blue-500 text-white px-4 py-2 rounded-md transition-transform transform hover:scale-105;
+        }
+        .btn:hover {
+            @apply bg-blue-700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container animate-fadeIn">
+        <h1 class="text-center text-2xl font-bold mb-4">📊 Data Visualization</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="graph-container">
+                <div id="graph1"></div>
+            </div>
+            <div class="graph-container">
+                <div id="graph2"></div>
+            </div>
+            <div class="graph-container">
+                <div id="graph3"></div>
+            </div>
+            <div class="graph-container">
+                <div id="graph4"></div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/" class="btn flex items-center justify-center gap-2">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            const graphData = JSON.parse('{{ graph_data | safe }}');
+            
+            console.log(graphData); // Add this line to debug the graphData
+
+            Plotly.newPlot('graph1', graphData[0].data, graphData[0].layout);
+            Plotly.newPlot('graph2', graphData[1].data, graphData[1].layout);
+            Plotly.newPlot('graph3', graphData[2].data, graphData[2].layout);
+            Plotly.newPlot('graph4', graphData[3].data, graphData[3].layout);
+        });
+    </script>
+</body>
+</html>

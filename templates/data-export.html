@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Export</title>
+    <link rel="stylesheet" href="../static/styles/global.css">
+    <script src="../static/components/header.js" defer></script>
+    <script src="../static/components/sidebar.js" defer></script>
+    <script src="../static/components/footer.js" defer></script>
+</head>
+<body>
+    <app-header></app-header>
+    <div class="container">
+        <app-sidebar></app-sidebar>
+        <main>
+            <h1 class="text-2xl font-bold mb-4">Data Export</h1>
+
+            <form id="exportForm">
+                <label for="format">Select Format:</label>
+                <select id="format" name="format">
+                    <option value="csv">CSV</option>
+                    <option value="json">JSON</option>
+                </select>
+
+                <button type="submit">Export Data</button>
+            </form>
+        </main>
+        <app-footer></app-footer>
+    </div>
+</body>
+</html>

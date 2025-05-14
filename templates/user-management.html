@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="../static/styles/global.css">
+    <link rel="stylesheet" href="../static/styles/user-management.css">
+    <script src="../static/components/header.js" defer></script>
+    <script src="../static/components/sidebar.js" defer></script>
+    <script src="../static/components/footer.js" defer></script>
+    <script src="../scripts/user-management.js" defer></script>
+</head>
+<body>
+    <app-header></app-header>
+    <div class="container">
+        <app-sidebar></app-sidebar>
+        <main>
+            <h1 class="text-2xl font-bold mb-4">User Management</h1>
+            <button id="addUserBtn" class="btn btn-primary">Add User</button>
+            <table id="userTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Users will be populated dynamically -->
+                </tbody>
+            </table>
+        </main>
+        <app-footer></app-footer>
+    </div>
+</body>
+</html>

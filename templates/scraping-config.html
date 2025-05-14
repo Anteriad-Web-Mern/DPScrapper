@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraping Configuration</title>
+    <link rel="stylesheet" href="../static/styles/global.css">
+    <script src="../static/components/header.js" defer></script>
+    <script src="../static/components/sidebar.js" defer></script>
+    <script src="../static/components/footer.js" defer></script>
+</head>
+<body>
+    <app-header></app-header>
+    <div class="container">
+        <app-sidebar></app-sidebar>
+        <main>
+            <h1 class="text-2xl font-bold mb-4">Scraping Configuration</h1>
+
+            <form id="scrapingConfigForm">
+                <label for="targetURL">Target Website URL:</label>
+                <input type="text" id="targetURL" name="targetURL" required>
+
+                <label for="frequency">Scraping Frequency:</label>
+                <select id="frequency" name="frequency">
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+
+                <label for="dataFilters">Data Filters:</label>
+                <textarea id="dataFilters" name="dataFilters"></textarea>
+
+                <button type="submit">Save Configuration</button>
+            </form>
+        </main>
+        <app-footer></app-footer>
+    </div>
+</body>
+</html>

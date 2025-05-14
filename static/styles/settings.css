@@ -1,0 +1,27 @@
+
+
+/* Settings Section */
+.settings-section {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    line-height: 35px;
+}
+
+/* Save Button */
+.btn-save {
+    background: #1e293b;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-save:hover {
+    background: #374151;
+}

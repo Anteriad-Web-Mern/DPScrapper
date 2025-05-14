@@ -1,0 +1,51 @@
+<!-- Updated History Page -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraping History</title>
+    <link rel="stylesheet" href="../static/styles/global.css">
+    <script src="../static/components/header.js" defer></script>
+    <script src="../static/components/sidebar.js" defer></script>
+    <script src="../static/components/footer.js" defer></script>
+</head>
+<body>
+    <app-header></app-header>
+    <div class="container">
+        <app-sidebar></app-sidebar>
+        <main>
+            <h1 class="text-2xl font-bold mb-4">Scraping History</h1>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Task ID</th>
+                        <th>Source</th>
+                        <th>Status</th>
+                        <th>Scraped Data</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#00123</td>
+                        <td>example.com</td>
+                        <td class="status completed">Completed</td>
+                        <td><a href="#">View Data</a></td>
+                        <td>2025-04-02</td>
+                    </tr>
+                    <tr>
+                        <td>#00124</td>
+                        <td>testsite.com</td>
+                        <td class="status failed">Failed</td>
+                        <td>-</td>
+                        <td>2025-04-01</td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+    </div>
+    <app-footer></app-footer>
+</body>
+</html>
+

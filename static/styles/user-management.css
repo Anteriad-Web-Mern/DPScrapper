@@ -1,0 +1,42 @@
+.container {
+    display: flex;
+}
+
+main {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #f4f4f4;
+}
+
+button {
+    padding: 5px 10px;
+    margin: 2px;
+    cursor: pointer;
+}
+
+.edit-btn {
+    background-color: #f0ad4e;
+    color: white;
+    border: none;
+}
+
+.delete-btn {
+    background-color: #d9534f;
+    color: white;
+    border: none;
+}

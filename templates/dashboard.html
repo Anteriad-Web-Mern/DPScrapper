@@ -1,0 +1,51 @@
+<!-- Updated Dashboard Page with Dynamic Task Data -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scraping Dashboard</title>
+  <link rel="stylesheet" href="../static/styles/global.css" />
+  <script src="../static/components/header.js" defer></script>
+  <script src="../static/components/sidebar.js" defer></script>
+  <script src="../static/components/footer.js" defer></script>
+</head>
+<body>
+  <app-header></app-header>
+  <div class="container">
+    <app-sidebar></app-sidebar>
+
+    <main>
+      <h1 class="text-2xl font-bold mb-4">Scraping Dashboard</h1>
+      
+      <a href="/scrape-now">
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          🔄 Run Scraper
+        </button>
+      </a>
+    
+      <section class="grid grid-cols-3 gap-4 mt-4">
+        {% for domain in domain_stats %}
+          <app-card 
+            title="{{ domain[0] }}" 
+            value="Users: {{ domain[1] }}, Blogs: {{ domain[2] }}, Resources: {{ domain[3] }}, TY Pages: {{ domain[4] }}">
+          </app-card>
+        {% endfor %}
+      </section>
+    </main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="mb-4">
+      {% for category, message in messages %}
+        <li class="text-green-600 font-semibold">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+    
+
+    <app-footer></app-footer>
+  </div>
+</body>
+</html>

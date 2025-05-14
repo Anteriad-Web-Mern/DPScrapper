@@ -1,0 +1,92 @@
+/* Table Styling */
+.task-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.task-table th, .task-table td {
+    padding: 10px;
+    text-align: left;
+}
+
+.task-table th {
+    background: #1e293b;
+    color: white;
+}
+
+/* Buttons */
+.btn-stop, .btn-view {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-stop {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-stop:hover {
+    background: #b91c1c;
+}
+
+.btn-view {
+    background: #1e293b;
+    color: white;
+}
+
+.btn-view:hover {
+    background: #374151;
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .task-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  
+  .btn-add {
+    background-color: #2563eb;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+  
+  .btn-add:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .btn-start {
+    background-color: #10b981;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+  }
+  
+  .btn-start:hover {
+    background-color: #059669;
+  }
+  
+  .hidden {
+  display: none !important;
+ }
