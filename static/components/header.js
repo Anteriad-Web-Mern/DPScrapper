@@ -1,46 +1,12 @@
 class AppHeader extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-    }
-
     connectedCallback() {
-        this.shadowRoot.innerHTML = `
-            <style>
-                .header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    background: #1e293b;
-                    color: white;
-                    padding: 1rem 2rem;
-                    font-size: 1.5rem;
-                    font-weight: bold;
-                }
-                .logo {
-                    font-size: 1.8rem;
-                    font-weight: bold;
-                }
-                .nav-links {
-                    display: flex;
-                    gap: 1rem;
-                }
-                .nav-links a {
-                    color: white;
-                    text-decoration: none;
-                    font-size: 1rem;
-                    transition: 0.3s;
-                }
-                .nav-links a:hover {
-                    text-decoration: underline;
-                }
-            </style>
-            <header class="header">
-                <div class="logo">Scraping Dashboard</div>
-                <nav class="nav-links">
-                    <a href="dashboard.html">Dashboard</a>
-                    <a href="settings.html">Settings</a>
-                    <a href="#">Logout</a>
+        this.innerHTML = `
+            <header class="w-full flex items-center justify-between bg-gradient-to-r from-background via-accent to-background border-b border-border px-8 py-4 text-foreground shadow-lg transition-shadow duration-300">
+                <div class="text-2xl font-bold tracking-tight">Scraping Dashboard</div>
+                <nav class="flex gap-6 items-center">
+                    <a href="/dashboard" class="text-muted-foreground hover:text-primary transition-colors font-medium hover:underline underline-offset-4">Dashboard</a>
+                    <a href="/settings" class="text-muted-foreground hover:text-primary transition-colors font-medium hover:underline underline-offset-4">Settings</a>
+                    <a href="#" class="text-muted-foreground hover:text-destructive transition-colors font-medium hover:underline underline-offset-4">Logout</a>
                 </nav>
             </header>
         `;

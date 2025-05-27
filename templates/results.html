@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 
 <head>
   <meta charset="UTF-8" />
@@ -10,49 +10,43 @@
   <script src="{{ url_for('static', filename='components/sidebar.js') }}" defer></script>
   <script src="{{ url_for('static', filename='components/footer.js') }}" defer></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles/results.css') }}" />
+  <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles/results.css') }}" /> -->
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
+<body class="h-full bg-gray-50 text-gray-800 min-h-screen flex flex-col">
   <app-header></app-header>
-  <div class="container">
-    <app-sidebar></app-sidebar>
-    <main class="main-content">
+  <div class="flex flex-1 overflow-hidden grow">
+    <app-sidebar class="w-64 bg-white border-r border-gray-200"></app-sidebar>
+    <main class="flex-1 overflow-y-auto p-6 h-full">  
       {% if result %}
-      <h1 class="text-2xl font-bold mb-4">Results for {{ result.domain }}</h1>
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Domain</th>
-            <th>Users</th>
-            <th>Blogs</th>
-            <th>Resources</th>
-            <th>Thank You Pages</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{{ result.domain }}</td>
-            <td>{{ result.users }}</td>
-            <td>{{ result.blogs }}</td>
-            <td>{{ result.resources }}</td>
-            <td>{{ result.thank_you }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <h1 class="text-2xl font-semibold mb-6">Results for {{ result.domain }}</h1>
 
-      {% if analytics %}
-      <h2 class="text-xl font-bold mt-6">Analytics</h2>
-      <ul>
-        {% for label in analytics.labels %}
-        <li>
-          <strong>{{ label }}:</strong> {{ analytics.values[loop.index0] }}
-        </li>
-        {% endfor %}
-      </ul>
-      {% endif %}
+      <div class="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200 bg-white">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Domain</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Users</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Blogs</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resources</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thank You Pages</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ result.domain }}</td>
+              <td class="px-6 py-4 text-sm text-gray-700">{{ result.users }}</td>
+              <td class="px-6 py-4 text-sm text-gray-700">{{ result.blogs }}</td>
+              <td class="px-6 py-4 text-sm text-gray-700">{{ result.resources }}</td>
+              <td class="px-6 py-4 text-sm text-gray-700">{{ result.thank_you }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <canvas id="analyticsChart" width="400" height="200"></canvas>
+      <canvas id="analyticsChart" width="400" height="200" class="mt-8"></canvas>
+
       <script>
         const ctx = document.getElementById('analyticsChart').getContext('2d');
         const chart = new Chart(ctx, {
@@ -64,73 +58,90 @@
               data: [
                 {{ result.users | default(0) | int }},
                 {{ result.blogs | default(0) | int }},
-                {{ result.resources | default (0) | int }},
-                {{ result.thank_you | default (0) | int }}],
-
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.2)',
-          'rgba(54, 162, 235, 0.2)',
-          'rgba(255, 206, 86, 0.2)',
-          'rgba(75, 192, 192, 0.2)'
-        ],
-          borderColor: [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)'
-          ],
-            borderWidth: 1
+                {{ result.resources | default(0) | int }},
+                {{ result.thank_you | default(0) | int }}
+              ],
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)'
+              ],
+              borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)'
+              ],
+              borderWidth: 1
             }]
           },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { beginAtZero: true }
             }
           }
-        }
         });
       </script>
+
       {% else %}
-      <h1 class="text-2xl font-bold mb-4">Summary of All Domains</h1>
+      <h1 class="text-2xl font-semibold mb-6">Summary of All Domains</h1>
+
       {% if summary %}
-      <div class="summary-section">
-        <p><strong>Total Users:</strong> {{ summary.total_users }}</p>
-        <p><strong>Total Blogs:</strong> {{ summary.total_blogs }}</p>
-        <p><strong>Total Resources:</strong> {{ summary.total_resources }}</p>
-        <p><strong>Total Thank-You Pages:</strong> {{ summary.total_thank_you }}</p>
+      <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md border border-gray-200">
+        <div class="p-4 border rounded-md bg-gray-50 text-center">
+          <p class="text-sm text-gray-500 uppercase">Total Users</p>
+          <p class="mt-2 text-2xl font-semibold text-blue-600">{{ summary.total_users }}</p>
+        </div>
+        <div class="p-4 border rounded-md bg-gray-50 text-center">
+          <p class="text-sm text-gray-500 uppercase">Total Blogs</p>
+          <p class="mt-2 text-2xl font-semibold text-green-600">{{ summary.total_blogs }}</p>
+        </div>
+        <div class="p-4 border rounded-md bg-gray-50 text-center">
+          <p class="text-sm text-gray-500 uppercase">Total Resources</p>
+          <p class="mt-2 text-2xl font-semibold text-yellow-600">{{ summary.total_resources }}</p>
+        </div>
+        <div class="p-4 border rounded-md bg-gray-50 text-center">
+          <p class="text-sm text-gray-500 uppercase">Total Thank-You Pages</p>
+          <p class="mt-2 text-2xl font-semibold text-purple-600">{{ summary.total_thank_you }}</p>
+        </div>
       </div>
       {% else %}
-      <p>No summary data available.</p>
+      <p class="text-gray-600">No summary data available.</p>
       {% endif %}
 
-      <h2 class="text-xl font-bold mt-6">Results for All Domains</h2>
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Domain</th>
-            <th>Users</th>
-            <th>Blogs</th>
-            <th>Resources</th>
-            <th>Thank-You Pages</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in all_results %}
-          <tr>
-            <td>{{ row[0] }}</td>
-            <td>{{ row[1] }}</td>
-            <td>{{ row[2] }}</td>
-            <td>{{ row[3] }}</td>
-            <td>{{ row[4] }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <h2 class="text-xl font-semibold mb-4">Results for All Domains</h2>
+
+      <div class="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200 bg-white">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Domain</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Users</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Blogs</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resources</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Thank-You Pages</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            {% for row in all_results %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ row[0] }}</td>
+              <td class="px-6 py-4 text-sm text-gray-700">{{ row[1] }}</td>
+              <td class="px-6 py-4 text-sm text-gray-700">{{ row[2] }}</td>
+              <td class="px-6 py-4 text-sm text-gray-700">{{ row[3] }}</td>
+              <td class="px-6 py-4 text-sm text-gray-700">{{ row[4] }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       {% endif %}
     </main>
-    <app-footer></app-footer>
   </div>
+  <app-footer></app-footer>
 </body>
 
 </html>

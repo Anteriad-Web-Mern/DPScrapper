@@ -4,44 +4,53 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Scraping Tasks</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/scrapping-task.css') }}">
+
   <script src="{{ url_for('static', filename='components/header.js') }}" defer></script>
   <script src="{{ url_for('static', filename='components/sidebar.js') }}" defer></script>
   <script src="{{ url_for('static', filename='components/footer.js') }}" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
   <app-header></app-header>
-  <div class="container">
+
+  <div class="flex min-h-screen">
     <app-sidebar></app-sidebar>
-    <main>
-      <div class="task-header">
-        <h1 class="task-title">Scraping Tasks</h1>
-        <button id="add-dp-btn" class="btn-add">+ Add DP</button>
+
+    <main class="flex-1 p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Scraping Tasks</h1>
+        <button id="add-dp-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">+ Add DP</button>
       </div>
 
-      <table class="task-table">
-        <thead>
-          <tr>
-            <th>SR_NO</th>
-            <th>Domain</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="task-body">
-          <!-- Rows will be dynamically added here -->
-        </tbody>
-      </table>
+      <div class="overflow-x-auto shadow border rounded bg-white">
+        <table class="min-w-full table-auto text-sm">
+          <thead class="bg-gray-200 text-left text-xs uppercase tracking-wider">
+            <tr>
+              <th class="p-3">SR_NO</th>
+              <th class="p-3">Domain</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="task-body" class="divide-y divide-gray-100">
+            <!-- Rows will be dynamically added here -->
+          </tbody>
+        </table>
+      </div>
 
       <!-- Results Section -->
-      <section id="results-section" class="hidden">
+      <section id="results-section" class="hidden mt-10 bg-white p-6 rounded shadow">
         <!-- Results for the selected domain will be dynamically inserted here -->
       </section>
     </main>
-    <app-footer></app-footer>
   </div>
+
+  <app-footer></app-footer>
 
   <script>
     async function fetchDomains() {
@@ -49,17 +58,17 @@
         const response = await fetch('/available-domains');
         const data = await response.json();
         const tbody = document.getElementById('task-body');
-        tbody.innerHTML = ""; // Clear previous rows
+        tbody.innerHTML = "";
 
         data.domains.forEach((domain, index) => {
           const tr = document.createElement('tr');
+          tr.classList.add('hover:bg-gray-50');
           tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${domain}</td>
-            <td id="status-${index}">Idle</td>
-            <td>
-              <a href="/results/${domain}" class="btn-view">View Results</a>
-              <button onclick="viewAnalytics('${domain}')">View Analytics</button>
+            <td class="p-3">${index + 1}</td>
+            <td class="p-3">${domain}</td>
+            <td id="status-${index}" class="p-3 text-green-600">Idle</td>
+            <td class="p-3 space-x-2">
+              <a href="/results/${domain}" class="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">View Results</a>
             </td>
           `;
           tbody.appendChild(tr);
@@ -68,48 +77,41 @@
         console.error("Error fetching domains:", error);
       }
     }
-    // console.log("viewResults called for", domain);
+
     async function viewResults(domain) {
       try {
         const response = await fetch(`/results/${domain}`, {
           headers: { "X-Requested-With": "XMLHttpRequest" }
         });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
         const data = await response.json();
+        if (data.error) return alert(data.error);
 
-        if (data.error) {
-          alert(data.error);
-          return;
-        }
-
-        // Update Results Section
         const resultsSection = document.getElementById('results-section');
         resultsSection.innerHTML = `
-          <h2 class="text-xl font-bold mt-6">Results for ${domain}</h2>
-          <table class="results-table">
-            <thead>
+          <h2 class="text-xl font-bold mb-4">Results for ${domain}</h2>
+          <table class="min-w-full table-auto border rounded overflow-hidden text-sm">
+            <thead class="bg-gray-100">
               <tr>
-                <th>Domain</th>
-                <th>Users</th>
-                <th>Blogs</th>
-                <th>Resources</th>
-                <th>Thank-You Pages</th>
+                <th class="p-3">Domain</th>
+                <th class="p-3">Users</th>
+                <th class="p-3">Blogs</th>
+                <th class="p-3">Resources</th>
+                <th class="p-3">Thank-You Pages</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>${data.result.domain}</td>
-                <td>${data.result.users}</td>
-                <td>${data.result.blogs}</td>
-                <td>${data.result.resources}</td>
-                <td>${data.result.thank_you}</td>
+              <tr class="text-center">
+                <td class="p-3">${data.result.domain}</td>
+                <td class="p-3">${data.result.users}</td>
+                <td class="p-3">${data.result.blogs}</td>
+                <td class="p-3">${data.result.resources}</td>
+                <td class="p-3">${data.result.thank_you}</td>
               </tr>
             </tbody>
           </table>
         `;
-        console.log("Results section updated", resultsSection.innerHTML);
         resultsSection.classList.remove('hidden');
       } catch (error) {
         console.error("Error fetching results:", error);
@@ -121,12 +123,8 @@
         const response = await fetch(`/analytics/${domain}`);
         const data = await response.json();
 
-        if (data.error) {
-          alert(data.error);
-          return;
-        }
+        if (data.error) return alert(data.error);
 
-        // Update Analytics Section
         document.getElementById('analytics-domain').textContent = domain;
         const ctx = document.getElementById('analyticsChart').getContext('2d');
         new Chart(ctx, {
@@ -147,16 +145,12 @@
           options: {
             responsive: true,
             plugins: {
-              legend: {
-                position: 'top'
-              },
-              title: {
-                display: true,
-                text: `Analytics for ${domain}`
-              }
+              legend: { position: 'top' },
+              title: { display: true, text: `Analytics for ${domain}` }
             }
           }
         });
+
         document.getElementById('analytics-section').classList.remove('hidden');
       } catch (error) {
         console.error("Error fetching analytics:", error);

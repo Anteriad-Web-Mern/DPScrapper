@@ -1,51 +1,123 @@
-<!-- Updated Dashboard Page with Dynamic Task Data -->
+<!-- Updated Dashboard Page with Overall Analytics and Chart -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scraping Dashboard</title>
+
+  <!-- ✅ Use Tailwind via CDN to avoid 404 error -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Custom Styles -->
   <link rel="stylesheet" href="../static/styles/global.css" />
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../static/components/header.js" defer></script>
   <script src="../static/components/sidebar.js" defer></script>
   <script src="../static/components/footer.js" defer></script>
 </head>
+
 <body>
   <app-header></app-header>
   <div class="container">
     <app-sidebar></app-sidebar>
 
     <main>
-      <h1 class="text-2xl font-bold mb-4">Scraping Dashboard</h1>
-      
-      <a href="/scrape-now">
-        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          🔄 Run Scraper
-        </button>
-      </a>
-    
-      <section class="grid grid-cols-3 gap-4 mt-4">
+      <!-- Overall Analytics Box -->
+      <section class="analytics-summary-box mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+          <div class="text-gray-600 font-semibold">Total Users</div>
+          <div class="text-2xl font-bold text-blue-600">{{ summary.total_users }}</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+          <div class="text-gray-600 font-semibold">Total Blogs</div>
+          <div class="text-2xl font-bold text-pink-600">{{ summary.total_blogs }}</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+          <div class="text-gray-600 font-semibold">Total Resources</div>
+          <div class="text-2xl font-bold text-yellow-600">{{ summary.total_resources }}</div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4 text-center">
+          <div class="text-gray-600 font-semibold">Total TY Pages</div>
+          <div class="text-2xl font-bold text-green-600">{{ summary.total_thank_you }}</div>
+        </div>
+      </section>
+
+      <!-- Domain Cards -->
+      <section class="grid grid-cols-3 mt-4">
         {% for domain in domain_stats %}
-          <app-card 
-            title="{{ domain[0] }}" 
-            value="Users: {{ domain[1] }}, Blogs: {{ domain[2] }}, Resources: {{ domain[3] }}, TY Pages: {{ domain[4] }}">
-          </app-card>
+        <app-card title="{{ domain[0] }}"
+          value="Users: {{ domain[1] }}, Blogs: {{ domain[2] }}, Resources: {{ domain[3] }}, TY Pages: {{ domain[4] }}">
+        </app-card>
         {% endfor %}
       </section>
+
+      <!-- Analytics Graph Section -->
+      <section class="mt-8">
+       <h2 class="text-xl font-bold mb-4 text-center">Analytics Overview</h2> 
+        <canvas id="analyticsChart"></canvas>
+      </section>
+      <script>
+        const analyticsData = JSON.parse('{{ analytics | tojson | safe }}');
+        const ctxAnalytics = document.getElementById('analyticsChart').getContext('2d');
+        new Chart(ctxAnalytics, {
+          type: 'bar',
+          data: {
+            labels: analyticsData.domains,
+            datasets: [
+              {
+                label: 'Users',
+                data: analyticsData.users,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)'
+              },
+              {
+                label: 'Blogs',
+                data: analyticsData.blogs,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)'
+              },
+              {
+                label: 'Resources',
+                data: analyticsData.resources,
+                backgroundColor: 'rgba(255, 206, 86, 0.6)'
+              },
+              {
+                label: 'Thank-You Pages',
+                data: analyticsData.thank_you,
+                backgroundColor: 'rgba(153, 102, 255, 0.6)'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top'
+              },
+              title: {
+                display: true,
+              }
+            }
+          }
+        });
+      </script>
     </main>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
+    {% if messages %}
     <ul class="mb-4">
       {% for category, message in messages %}
-        <li class="text-green-600 font-semibold">{{ message }}</li>
+      <li class="text-green-600 font-semibold">{{ message }}</li>
       {% endfor %}
     </ul>
-  {% endif %}
-{% endwith %}
-
+    {% endif %}
+    {% endwith %}
     
-
-    <app-footer></app-footer>
+      
   </div>
+  <app-footer></app-footer>
 </body>
+
 </html>

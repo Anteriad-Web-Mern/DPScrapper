@@ -1,44 +1,65 @@
 /* Scraping Results Table */
 .results-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    /* background: white; */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 /* Table Header */
 .results-table thead {
-    background-color: #1e293b;
-    color: white;
-    text-align: left;
+  background-color: #1e293b;
+  color: white;
+  text-align: left;
 }
 
 /* Table Cells */
-.results-table th, .results-table td {
-    padding: 12px;
-    border-bottom: 1px solid #ddd;
+.results-table th,
+.results-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
 }
 
 /* Table Row Hover */
 .results-table tbody tr:hover {
-    background: #f1f5f9;
+  background: #f1f5f9;
 }
 
 /* Download Button */
 .btn-download {
-    background: #334155;
-    color: white;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.3s ease;
+  background: #334155;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
 }
 
 .btn-download:hover {
-    background: #475569;
+  background: #475569;
+}
+
+/* Main Content Fix */
+.main-content {
+  margin: 40px;
+  padding-bottom: 80px; /* ensures content is visible above fixed footer */
+}
+
+/* Footer Fix */
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background-color: #1e293b;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }

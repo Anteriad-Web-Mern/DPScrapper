@@ -8,6 +8,8 @@ import plotly.utils
 from threading import Thread
 import fetch_data
 from domain_utils import load_domains, add_domain
+import requests
+from requests.auth import HTTPBasicAuth
 
 app = Flask(__name__, template_folder="templates")
 
@@ -53,7 +55,28 @@ def dashboard():
     cursor.execute("SELECT * FROM domains")
     domain_stats = cursor.fetchall()
     conn.close()
-    return render_template("dashboard.html", domain_stats=domain_stats)
+    summary = {
+        "total_users": sum(row[1] for row in domain_stats),
+        "total_blogs": sum(row[2] for row in domain_stats),
+        "total_resources": sum(row[3] for row in domain_stats),
+        "total_thank_you": sum(row[4] for row in domain_stats),
+    }
+    # Prepare data for visualization
+    domains = [row[0] for row in domain_stats]
+    users = [row[1] for row in domain_stats]
+    blogs = [row[2] for row in domain_stats]
+    resources = [row[3] for row in domain_stats]
+    thank_you = [row[4] for row in domain_stats]
+
+    analytics = {
+        "domains": domains,
+        "users": users,
+        "blogs": blogs,
+        "resources": resources,
+        "thank_you": thank_you
+    }
+
+    return render_template("dashboard.html", domain_stats=domain_stats, summary=summary, analytics=analytics)
 
 @app.route("/scrape-now")
 def scrape_now():
@@ -222,6 +245,40 @@ def analytics_for_domain(domain):
 
     return jsonify(analytics_data)
 
+@app.route('/bulk-add-user', methods=['GET', 'POST'])
+def bulk_add_user():
+    if request.method == 'POST':
+        username = request.form['username']
+        email = request.form['email']
+        role = request.form.get('role', 'subscriber')
+        password = 'TempPass@123'  # You could also collect this from form input
+
+        with open('domains.json') as f:
+            domains = json.load(f)
+
+        results = []
+        for domain in domains:
+            url = domain['url'].rstrip('/') + '/wp-json/wp/v2/users'
+            auth = HTTPBasicAuth(domain['username'], domain['password'])
+            data = {
+                'username': username,
+                'email': email,
+                'password': password,
+                'roles': role
+            }
+            try:
+                resp = requests.post(url, auth=auth, json=data, timeout=10)
+                if resp.status_code in (200, 201):
+                    results.append((domain['domain'], 'Success'))
+                else:
+                    results.append((domain['domain'], f"Failed: {resp.status_code} {resp.text}"))
+            except Exception as e:
+                results.append((domain['domain'], f"Error: {e}"))
+        return render_template('bulk_add_user.html', results=results)
+
+    return render_template('bulk_add_user.html', results=None)
+
+
 # ---------------------- Scraping Tasks Page ----------------------
 
 @app.route("/scraping-tasks")
@@ -259,4 +316,4 @@ def view_task(task_id):
 
 if __name__ == "__main__":
     Thread(target=fetch_data.run_fetch).start()
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

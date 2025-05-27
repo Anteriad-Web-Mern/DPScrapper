@@ -1,68 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Analytics</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="../static/styles/global.css" />
-    <script src="../static/components/header.js" defer></script>
-    <script src="../static/components/sidebar.js" defer></script>
-    <script src="../static/components/footer.js" defer></script>
-  </head>
-  <body>
-    <app-header></app-header>
-    <div class="container">
-      <app-sidebar></app-sidebar>
-      <main class="main-content">
-        <h1 class="text-2xl font-bold mb-4">Analytics</h1>
-        <canvas id="analyticsChart"></canvas>
-      </main>
-      <app-footer></app-footer>
-    </div>
-    <script>
-      const analyticsData = JSON.parse('{{ analytics | tojson | safe }}');
-      const ctx = document.getElementById('analyticsChart').getContext('2d');
-      new Chart(ctx, {
-          type: 'bar',
-          data: {
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="../static/styles/global.css" />
+  <script src="../static/components/header.js" defer></script>
+  <script src="../static/components/sidebar.js" defer></script>
+  <script src="../static/components/footer.js" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <app-header></app-header>
+  <div class="flex flex-1">
+    <app-sidebar class="w-64 bg-white border-r border-gray-200"></app-sidebar>
+    <main class="flex-1 p-6 overflow-y-auto">
+      <h1 class="text-2xl font-bold mb-6">Analytics Overview</h1>
+
+      <!-- Overall Chart -->
+      <div class="bg-white p-6 mb-10 rounded shadow">
+        <h2 class="text-xl font-semibold mb-4">Overall Area Chart</h2>
+        <div class="w-full h-96">
+          <canvas id="overallChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Individual Pie Charts -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Users -->
+        <div class="bg-white p-6 rounded shadow flex flex-col items-center">
+          <h2 class="text-lg font-semibold mb-2">Users</h2>
+          <div class="w-full flex justify-center">
+            <canvas id="usersChart" class="w-60 h-60"></canvas>
+          </div>
+        </div>
+
+        <!-- Blogs -->
+        <div class="bg-white p-6 rounded shadow flex flex-col items-center">
+          <h2 class="text-lg font-semibold mb-2">Blogs</h2>
+          <div class="w-full flex justify-center">
+            <canvas id="blogsChart" class="w-60 h-60"></canvas>
+          </div>
+        </div>
+
+        <!-- Resources -->
+        <div class="bg-white p-6 rounded shadow flex flex-col items-center">
+          <h2 class="text-lg font-semibold mb-2">Resources</h2>
+          <div class="w-full flex justify-center">
+            <canvas id="resourcesChart" class="w-60 h-60"></canvas>
+          </div>
+        </div>
+
+        <!-- Thank-You Pages -->
+        <div class="bg-white p-6 rounded shadow flex flex-col items-center">
+          <h2 class="text-lg font-semibold mb-2">Thank-You Pages</h2>
+          <div class="w-full flex justify-center">
+            <canvas id="thankYouChart" class="w-60 h-60"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart Script -->
+      <script>
+        const analyticsData = JSON.parse('{{ analytics | tojson | safe }}');
+
+        const backgroundColors = [
+          'rgba(54, 162, 235, 0.7)',
+          'rgba(255, 99, 132, 0.7)',
+          'rgba(255, 206, 86, 0.7)',
+          'rgba(153, 102, 255, 0.7)',
+          'rgba(75, 192, 192, 0.7)',
+          'rgba(255, 159, 64, 0.7)',
+          'rgba(100, 181, 246, 0.7)',
+          'rgba(244, 143, 177, 0.7)'
+        ];
+
+        // Create Pie Charts
+        function makePieChart(canvasId, label, dataArr) {
+          new Chart(document.getElementById(canvasId).getContext('2d'), {
+            type: 'doughnut',
+            data: {
               labels: analyticsData.domains,
-              datasets: [
-                  {
-                      label: 'Users',
-                      data: analyticsData.users,
-                      backgroundColor: 'rgba(75, 192, 192, 0.6)'
-                  },
-                  {
-                      label: 'Blogs',
-                      data: analyticsData.blogs,
-                      backgroundColor: 'rgba(54, 162, 235, 0.6)'
-                  },
-                  {
-                      label: 'Resources',
-                      data: analyticsData.resources,
-                      backgroundColor: 'rgba(255, 206, 86, 0.6)'
-                  },
-                  {
-                      label: 'Thank-You Pages',
-                      data: analyticsData.thank_you,
-                      backgroundColor: 'rgba(153, 102, 255, 0.6)'
-                  }
-              ]
+              datasets: [{
+                label: label,
+                data: dataArr,
+                backgroundColor: backgroundColors
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }, // <-- legend removed here
+                tooltip: { enabled: true }
+              }
+            }
+          });
+        }
+
+        makePieChart('usersChart', 'Users', analyticsData.users);
+        makePieChart('blogsChart', 'Blogs', analyticsData.blogs);
+        makePieChart('resourcesChart', 'Resources', analyticsData.resources);
+        makePieChart('thankYouChart', 'Thank-You Pages', analyticsData.thank_you);
+
+        // Create Overall Area Chart
+        new Chart(document.getElementById('overallChart').getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: analyticsData.domains,
+            datasets: [
+              {
+                label: 'Users',
+                data: analyticsData.users,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                fill: true,
+                tension: 0.4
+              },
+              {
+                label: 'Blogs',
+                data: analyticsData.blogs,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                fill: true,
+                tension: 0.4
+              },
+              {
+                label: 'Resources',
+                data: analyticsData.resources,
+                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                borderColor: 'rgba(255, 206, 86, 1)',
+                fill: true,
+                tension: 0.4
+              },
+              {
+                label: 'Thank-You Pages',
+                data: analyticsData.thank_you,
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                fill: true,
+                tension: 0.4
+              }
+            ]
           },
           options: {
-              responsive: true,
-              plugins: {
-                  legend: {
-                      position: 'top'
-                  },
-                  title: {
-                      display: true,
-                      text: 'Analytics Overview'
-                  }
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' },
+              tooltip: { mode: 'index', intersect: false }
+            },
+            interaction: {
+              mode: 'nearest',
+              axis: 'x',
+              intersect: false
+            },
+            scales: {
+              x: {
+                display: true,
+                title: { display: true, text: 'Domains' }
+              },
+              y: {
+                display: true,
+                title: { display: true, text: 'Count' },
+                beginAtZero: true
               }
+            }
           }
-      });
-    </script>
-  </body>
+        });
+      </script>
+    </main>
+  </div>
+  <app-footer></app-footer>
+</body>
+
 </html>
