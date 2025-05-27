@@ -42,3 +42,7 @@ build/
 *.bak
 *.swp
 *.swo
+
+#SQLite database files
+*.sqlite3
+*.db
