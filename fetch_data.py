@@ -1,31 +1,42 @@
 import requests
 from requests.auth import HTTPBasicAuth
-import sqlite3
+import mysql.connector
 import threading
 import time
 import json
 import os
 
-DB_MAIN = "wordpress_data.db"
+# MySQL connection config
+MYSQL_CONFIG = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'hritik1234',
+    'database': 'wordpress_data',
+}
+
 # Path to the JSON file
 DOMAINS_FILE = "domains.json"
 
-# DB Setup
-conn = sqlite3.connect(DB_MAIN, check_same_thread=False)
-cursor = conn.cursor()
 
-# Drop and recreate the table to ensure all columns exist
-cursor.execute("DROP TABLE IF EXISTS domains")
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS domains (
-        domain TEXT PRIMARY KEY,
-        users INT,
-        blogs INT,
-        resources INT,
-        thank_you INT
-    )
-''')
-conn.commit()
+def get_mysql_conn():
+    return mysql.connector.connect(**MYSQL_CONFIG)
+
+
+# Ensure the domains table exists
+def ensure_domains_table():
+    conn = get_mysql_conn()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS domains (
+            domain VARCHAR(255) PRIMARY KEY,
+            users INT,
+            blogs INT,
+            resources INT,
+            thank_you INT
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 
 def load_domains_from_json():
@@ -98,23 +109,27 @@ def fetch_and_store(domain_info):
             if isinstance(p, dict) and 'slug' in p and 'thank-you' in p['slug'].lower()
         )
 
-        with conn:
-            cursor.execute(
-                '''
-                    REPLACE INTO domains (domain, users, blogs, resources, thank_you)
-                    VALUES (?, ?, ?, ?, ?)
-                ''',
-                (domain, len(users), len(blogs), len(pages), thank_you_pages)
-            )
+        conn = get_mysql_conn()
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+                REPLACE INTO domains (domain, users, blogs, resources, thank_you)
+                VALUES (%s, %s, %s, %s, %s)
+            ''',
+            (domain, len(users), len(blogs), len(pages), thank_you_pages)
+        )
+        conn.commit()
+        conn.close()
         print(f"✅ Data stored for {domain}")
 
     except requests.exceptions.RequestException as e:
         print(f"❌ Error fetching {domain}: {e}")
-    except sqlite3.Error as e:
+    except mysql.connector.Error as e:
         print(f"❌ Database error for {domain}: {e}")
 
 
 def run_fetch():
+    ensure_domains_table()
     domains = load_domains_from_json()
     if not domains:
         print("❌ No domains to scrape.")
@@ -132,5 +147,4 @@ def run_fetch():
 
 
 if __name__ == '__main__':
-    
     run_fetch()

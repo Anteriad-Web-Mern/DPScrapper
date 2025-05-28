@@ -1,7 +1,7 @@
 from flask import Flask, redirect, render_template, request, jsonify, url_for, flash
 from flask_cors import CORS
 import os
-import sqlite3
+import mysql.connector
 import json
 import plotly.graph_objects as go
 import plotly.utils
@@ -13,13 +13,21 @@ from requests.auth import HTTPBasicAuth
 
 app = Flask(__name__, template_folder="templates")
 
-DB_MAIN = "wordpress_data.db"
-DB_CREDENTIALS = "credentials.db"
+# MySQL connection config
+MYSQL_CONFIG = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': 'hritik1234',
+    'database': 'wordpress_data',
+}
+
+def get_mysql_conn():
+    return mysql.connector.connect(**MYSQL_CONFIG)
 
 # ---------------------- Utility Functions ----------------------
 
 def execute_query(query, values=(), fetch=False):
-    with sqlite3.connect(DB_CREDENTIALS) as conn:
+    with get_mysql_conn() as conn:
         cursor = conn.cursor()
         cursor.execute(query, values)
         if fetch:
@@ -27,7 +35,7 @@ def execute_query(query, values=(), fetch=False):
         conn.commit()
 
 def get_data():
-    conn = sqlite3.connect(DB_MAIN)
+    conn = get_mysql_conn()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM domains")
     rows = cursor.fetchall()
@@ -50,7 +58,7 @@ def home():
 
 @app.route("/dashboard")
 def dashboard():
-    conn = sqlite3.connect(DB_MAIN)
+    conn = get_mysql_conn()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM domains")
     domain_stats = cursor.fetchall()
@@ -80,7 +88,7 @@ def dashboard():
 
 @app.route("/scrape-now")
 def scrape_now():
-    run_fetch()
+    Thread(target=fetch_data.run_fetch).start()
     flash("✅ Scraping completed successfully!", "success")
     return redirect(url_for("dashboard"))
 
@@ -115,7 +123,7 @@ def fetch_data_route():
 def add_task():
     data = request.json
     execute_query(
-        "INSERT OR IGNORE INTO scraping_tasks (task_name, domain, status) VALUES (?, ?, ?)",
+        "INSERT IGNORE INTO scraping_tasks (task_name, domain, status) VALUES (%s, %s, %s)",
         (data["task_name"], data["domain"], "Pending")
     )
     return jsonify({"message": "Task added successfully."})
@@ -124,7 +132,7 @@ def add_task():
 def add_credentials():
     data = request.json
     execute_query(
-        "INSERT OR REPLACE INTO credentials (domain, username, password) VALUES (?, ?, ?)",
+        "REPLACE INTO credentials (domain, username, password) VALUES (%s, %s, %s)",
         (data["domain"], data["username"], data["password"])
     )
     return jsonify({"message": "Credentials saved successfully."})
@@ -148,7 +156,7 @@ def add_domain_route():
 
 @app.route("/results")
 def results_summary():
-    conn = sqlite3.connect(DB_MAIN)
+    conn = get_mysql_conn()
     cursor = conn.cursor()
 
     # Fetch data for all domains
@@ -173,10 +181,9 @@ def results_summary():
 
 @app.route("/results/<domain>")
 def results_for_domain(domain):
-    import sqlite3
-    conn = sqlite3.connect(DB_MAIN)
+    conn = get_mysql_conn()
     cursor = conn.cursor()
-    cursor.execute("SELECT domain, users, blogs, resources, thank_you FROM domains WHERE domain = ?", (domain,))
+    cursor.execute("SELECT domain, users, blogs, resources, thank_you FROM domains WHERE domain = %s", (domain,))
     row = cursor.fetchone()
     conn.close()
 
@@ -199,7 +206,7 @@ def results_for_domain(domain):
 @app.route("/analytics")
 def analytics():
     # Fetch all domain data from the `domains` table
-    conn = sqlite3.connect(DB_MAIN)
+    conn = get_mysql_conn()
     cursor = conn.cursor()
     cursor.execute("SELECT domain, users, blogs, resources, thank_you FROM domains")
     rows = cursor.fetchall()
@@ -225,9 +232,9 @@ def analytics():
 @app.route("/analytics/<domain>")
 def analytics_for_domain(domain):
     # Fetch data for the specific domain from the `domains` table
-    conn = sqlite3.connect(DB_MAIN)
+    conn = get_mysql_conn()
     cursor = conn.cursor()
-    cursor.execute("SELECT domain, users, blogs, resources, thank_you FROM domains WHERE domain = ?", (domain,))
+    cursor.execute("SELECT domain, users, blogs, resources, thank_you FROM domains WHERE domain = %s", (domain,))
     row = cursor.fetchone()
     conn.close()
 
@@ -297,12 +304,12 @@ def run_scraping():
 
 @app.route("/task/<int:task_id>/stop", methods=["POST"])
 def stop_task(task_id):
-    execute_query("UPDATE scraping_tasks SET status = ? WHERE id = ?", ("Stopped", task_id))
+    execute_query("UPDATE scraping_tasks SET status = %s WHERE id = %s", ("Stopped", task_id))
     return jsonify({"message": "Task stopped successfully."})
 
 @app.route("/task/<int:task_id>/view", methods=["GET"])
 def view_task(task_id):
-    task = execute_query("SELECT * FROM scraping_tasks WHERE id = ?", (task_id,), fetch=True)
+    task = execute_query("SELECT * FROM scraping_tasks WHERE id = %s", (task_id,), fetch=True)
     if task:
         return jsonify({
             "id": task[0][0],
