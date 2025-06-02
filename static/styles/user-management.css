@@ -1,3 +1,134 @@
+/* Layout */
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: row;
+    background: #f9fafb;
+}
+
+app-sidebar {
+    width: 240px;
+    min-width: 200px;
+    background: #fff;
+    border-right: 1px solid #e5e7eb;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+    padding: 2rem;
+    background: #f9fafb;
+    min-height: calc(100vh - 120px); /* Adjust if header/footer height changes */
+    overflow-x: auto;
+}
+
+app-header, app-footer {
+    width: 100%;
+    display: block;
+}
+
+app-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+app-footer {
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+/* Table styling */
+#userTable {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    margin-top: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+#userTable th, #userTable td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+}
+
+#userTable th {
+    background: #f3f4f6;
+    font-weight: 600;
+}
+
+/* Modal styling */
+#addUserModal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+#addUserModal form {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    min-width: 320px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#addUserModal input, #addUserModal select {
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+#addUserModal button[type="submit"] {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#addUserModal button[type="button"] {
+    background: #e5e7eb;
+    color: #374151;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn.btn-primary {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
 .container {
     display: flex;
 }

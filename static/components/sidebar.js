@@ -8,11 +8,26 @@ class AppSidebar extends HTMLElement {
                 <a href="/results" class="block rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium focus:ring-2 focus:ring-primary">Results</a>
                 <a href="/analytics" class="block rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium focus:ring-2 focus:ring-primary">Analytics</a>
                 <a href="/logs" class="block rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium focus:ring-2 focus:ring-primary">Logs</a>
-                <a href="/user-management" class="block rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium focus:ring-2 focus:ring-primary">User Management</a>
+
+                <div class="collapsible">
+                    <button type="button" class="block w-full text-left rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium focus:ring-2 focus:ring-primary">
+                        User Management
+                    </button>
+                    <div class="content hidden">
+                        <a href="/user-management" class="block rounded-md px-5 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium focus:ring-2 focus:ring-primary">Users</a>
+                        <a href="/bulk-add-user" class="block rounded-md px-5 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium">Bulk Add User</a>
+                    </div>
+                </div>
+
                 <a href="/settings" class="block rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium focus:ring-2 focus:ring-primary">Settings</a>
-                <a href="/bulk-add-user" class="block rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors">Bulk Add User</a>
             </nav>
         `;
+
+        // Add JavaScript to handle the collapsible functionality
+        this.querySelector('.collapsible button').addEventListener('click', () => {
+            const content = this.querySelector('.collapsible .content');
+            content.classList.toggle('hidden');
+        });
     }
 }
 

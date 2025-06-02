@@ -1,39 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management</title>
-    <link rel="stylesheet" href="../static/styles/global.css">
-    <link rel="stylesheet" href="../static/styles/user-management.css">
-    <script src="../static/components/header.js" defer></script>
-    <script src="../static/components/sidebar.js" defer></script>
-    <script src="../static/components/footer.js" defer></script>
-    <script src="../scripts/user-management.js" defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Management</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Components -->
+  <script src="{{ url_for('static', filename='components/header.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='components/sidebar.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='components/footer.js') }}" defer></script>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='scripts/user-management.js') }}" defer></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/user-management.css') }}" />
 </head>
-<body>
-    <app-header></app-header>
-    <div class="container">
-        <app-sidebar></app-sidebar>
-        <main>
-            <h1 class="text-2xl font-bold mb-4">User Management</h1>
-            <button id="addUserBtn" class="btn btn-primary">Add User</button>
-            <table id="userTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Users will be populated dynamically -->
-                </tbody>
-            </table>
-        </main>
-        <app-footer></app-footer>
-    </div>
+
+<body class="h-full bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+  <app-header></app-header>
+
+  <div class="flex flex-1 overflow-hidden">
+    <app-sidebar class="w-64 bg-white border-r border-gray-200"></app-sidebar>
+
+    <main class="flex-1 p-6 overflow-y-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">User Management</h1>
+        <button id="addUserBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add User</button>
+      </div>
+
+      <div class="mb-4">
+        <label for="roleFilter" class="block text-sm font-medium text-gray-700">Filter by Role:</label>
+        <select id="roleFilter" class="mt-1 block w-64 p-2 border border-gray-300 rounded">
+          <option value="">All</option>
+          <option value="administrator">Administrator</option>
+          <option value="editor">Editor</option>
+          <option value="author">Author</option>
+          <option value="contributor">Contributor</option>
+          <option value="subscriber">Subscriber</option>
+        </select>
+      </div>
+
+      <div class="overflow-x-auto rounded-lg shadow border border-gray-200 bg-white">
+        <table id="userTable" class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Name</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Email</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Roles</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal -->
+      <div id="addUserModal" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+          <h2 class="text-lg font-semibold mb-4">Add New User</h2>
+          <form id="addUserForm" class="space-y-4">
+            <input name="username" placeholder="Username" required class="w-full px-4 py-2 border border-gray-300 rounded" />
+            <input name="email" type="email" placeholder="Email" required class="w-full px-4 py-2 border border-gray-300 rounded" />
+            <input name="password" type="password" placeholder="Password" required class="w-full px-4 py-2 border border-gray-300 rounded" />
+            <select name="role" required class="w-full px-4 py-2 border border-gray-300 rounded">
+              <option value="subscriber">Subscriber</option>
+              <option value="author">Author</option>
+              <option value="editor">Editor</option>
+              <option value="administrator">Administrator</option>
+            </select>
+            <div class="flex justify-end space-x-2 pt-4">
+              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add</button>
+              <button type="button" onclick="closeModal()" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <app-footer></app-footer>
 </body>
+
 </html>
