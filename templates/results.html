@@ -18,11 +18,11 @@
   <app-header></app-header>
   <div class="flex flex-1 overflow-hidden grow">
     <app-sidebar class="w-64 bg-white border-r border-gray-200"></app-sidebar>
-    <main class="flex-1 overflow-y-auto p-6 h-full">  
+    <main class="flex-1 overflow-y-auto p-6 h-full">
       {% if result %}
-      <h1 class="text-2xl font-semibold mb-6">Results for {{ result.domain }}</h1>
+      <h1 class="text-3xl font-semibold mb-6">Results for {{ result.domain }}</h1>
 
-      <div class="overflow-x-auto rounded-lg shadow-md border border-gray-200">
+      <div class="overflow-x-auto rounded-lg shadow-md border border-gray-200 mb-8">
         <table class="min-w-full divide-y divide-gray-200 bg-white">
           <thead class="bg-gray-100">
             <tr>
@@ -45,49 +45,270 @@
         </table>
       </div>
 
-      <canvas id="analyticsChart" width="400" height="200" class="mt-8"></canvas>
+      <!-- Bar Chart for Users, Blogs, Resources, Thank You Pages -->
+      <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+        <h2 class="text-xl font-semibold mb-4">Data Overview</h2>
+        <div style="position: relative; height:300px;">
+          <canvas id="dataOverviewChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Google Analytics Data - Bento Grid -->
+      <h2 class="text-2xl font-semibold mt-8 mb-4">Google Analytics Data</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Top Pages by Pageviews -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h3 class="text-lg font-semibold mb-2">Top Pages by Pageviews</h3>
+          <div style="position: relative; height:200px;">
+            <canvas id="topPagesChart"></canvas>
+          </div>
+        </div>
+
+         <!-- Post Views -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h3 class="text-lg font-semibold mb-2">Post Views</h3>
+          <div style="position: relative; height:200px;">
+            <canvas id="postViewsChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Daily Traffic Trend -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h3 class="text-lg font-semibold mb-2">Daily Traffic Trend</h3>
+           <div style="position: relative; height:200px;">
+            <canvas id="dailyTrafficChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Traffic Sources -->
+        <div class="bg-white p-6 rounded-lg shadow-md md:col-span-2 lg:col-span-1">
+          <h3 class="text-lg font-semibold mb-2">Traffic Sources</h3>
+           <div style="position: relative; height:200px;">
+            <canvas id="trafficSourcesChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Geo-location of Users -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h3 class="text-lg font-semibold mb-2">Geo-location of Users</h3>
+           <div style="position: relative; height:200px;">
+            <canvas id="geoLocationChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Bounce Rate -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h3 class="text-lg font-semibold mb-2">Bounce Rate</h3>
+          <p class="text-gray-700 text-base" id="bounceRateText">Loading...</p>
+        </div>
+
+        <!-- Average Session Duration -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+          <h3 class="text-lg font-semibold mb-2">Average Session Duration</h3>
+          <p class="text-gray-700 text-base" id="avgTimeText">Loading...</p>
+        </div>
+
+      </div>
 
       <script>
-        const ctx = document.getElementById('analyticsChart').getContext('2d');
-        const chart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: ['Users', 'Blogs', 'Resources', 'Thank-You Pages'],
-            datasets: [{
-              label: '{{ result.domain }}',
-              data: [
-                {{ result.users | default(0) | int }},
-                {{ result.blogs | default(0) | int }},
-                {{ result.resources | default(0) | int }},
-                {{ result.thank_you | default(0) | int }}
-              ],
-              backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(255, 206, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)'
-              ],
-              borderColor: [
-                'rgba(255, 99, 132, 1)',
-                'rgba(54, 162, 235, 1)',
-                'rgba(255, 206, 86, 1)',
-                'rgba(75, 192, 192, 1)'
-              ],
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: { beginAtZero: true }
+        const analyticsData = JSON.parse('{{ analytics_data | tojson | safe }}');
+        const resultData = {{ result | tojson | safe }};
+
+        // Function to create a chart
+        function createChart(canvasId, chartType, data, options) {
+          const ctx = document.getElementById(canvasId).getContext('2d');
+          new Chart(ctx, {
+            type: chartType,
+            data: data,
+            options: {
+              responsive: true,
+              maintainAspectRatio: false, // Disable aspect ratio
+              ...options
+            }
+          });
+        }
+
+        // Data Overview Chart (Bar Chart)
+        createChart('dataOverviewChart', 'bar', {
+          labels: ['Users', 'Blogs', 'Resources', 'Thank You Pages'],
+          datasets: [{
+            label: 'Count',
+            data: [resultData.users, resultData.blogs, resultData.resources, resultData.thank_you],
+            backgroundColor: [
+              'rgba(54, 162, 235, 0.7)',
+              'rgba(255, 99, 132, 0.7)',
+              'rgba(255, 206, 86, 0.7)',
+              'rgba(75, 192, 192, 0.7)'
+            ],
+            borderColor: [
+              'rgba(54, 162, 235, 1)',
+              'rgba(255, 99, 132, 1)',
+              'rgba(255, 206, 86, 1)',
+              'rgba(75, 192, 192, 1)'
+            ],
+            borderWidth: 1
+          }]
+        }, {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Count'
+              }
             }
           }
         });
+
+        // Top Pages Chart
+        createChart('topPagesChart', 'bar', {
+          labels: analyticsData.top_pages.map(item => item.pagePath),
+          datasets: [{
+            label: 'Pageviews',
+            data: analyticsData.top_pages.map(item => item.screenPageViews),
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        }, {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Pageviews'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Page Path'
+              }
+            }
+          }
+        });
+
+         // Post Views Chart
+        createChart('postViewsChart', 'bar', {
+          labels: analyticsData.post_views.map(item => item.pagePath),
+          datasets: [{
+            label: 'Pageviews',
+            data: analyticsData.post_views.map(item => item.screenPageViews),
+            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        }, {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Pageviews'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Page Path'
+              }
+            }
+          }
+        });
+
+        // Daily Traffic Chart
+        createChart('dailyTrafficChart', 'line', {
+          labels: analyticsData.daily_traffic.map(item => item.date),
+          datasets: [{
+            label: 'Sessions',
+            data: analyticsData.daily_traffic.map(item => item.sessions),
+            borderColor: 'rgba(255, 99, 132, 1)',
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            fill: true,
+            tension: 0.4
+          }]
+        }, {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Sessions'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Date'
+              }
+            }
+          }
+        });
+
+        // Traffic Sources Chart
+        createChart('trafficSourcesChart', 'pie', {
+          labels: analyticsData.traffic_sources.map(item => item.sessionSourceMedium),
+          datasets: [{
+            label: 'Sessions',
+            data: analyticsData.traffic_sources.map(item => item.sessions),
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.7)',
+              'rgba(54, 162, 235, 0.7)',
+              'rgba(255, 206, 86, 0.7)',
+              'rgba(75, 192, 192, 0.7)',
+              'rgba(153, 102, 255, 0.7)',
+              'rgba(255, 159, 64, 0.7)'
+            ],
+            borderWidth: 0
+          }]
+        }, {
+          plugins: {
+            legend: {
+              position: 'top',
+              align: 'center'
+            }
+          }
+        });
+
+        // Geo-location Chart
+        createChart('geoLocationChart', 'bar', {
+          labels: analyticsData.geo_location.map(item => item.country),
+          datasets: [{
+            label: 'Active Users',
+            data: analyticsData.geo_location.map(item => item.activeUsers),
+            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        }, {
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Active Users'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Country'
+              }
+            }
+          }
+        });
+
+        // Display Bounce Rate
+        document.getElementById('bounceRateText').textContent = analyticsData.bounce_rate.length > 0 ? `${analyticsData.bounce_rate[0].bounceRate}%` : 'No data available';
+
+        // Display Average Session Duration
+        document.getElementById('avgTimeText').textContent = analyticsData.average_time_on_page.length > 0 ? `${parseFloat(analyticsData.average_time_on_page[0].averageSessionDuration).toFixed(2)} seconds` : 'No data available';
       </script>
 
       {% else %}
-      <h1 class="text-2xl font-semibold mb-6">Summary of All Domains</h1>
+      <h1 class="text-3xl font-semibold mb-6">Summary of All Domains</h1>
 
       {% if summary %}
       <div class="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md border border-gray-200">
@@ -112,7 +333,7 @@
       <p class="text-gray-600">No summary data available.</p>
       {% endif %}
 
-      <h2 class="text-xl font-semibold mb-4">Results for All Domains</h2>
+      <h2 class="text-2xl font-semibold mb-4">Results for All Domains</h2>
 
       <div class="overflow-x-auto rounded-lg shadow-md border border-gray-200">
         <table class="min-w-full divide-y divide-gray-200 bg-white">

@@ -11,6 +11,7 @@ import fetch_data
 from domain_utils import load_domains, add_domain
 import requests
 from requests.auth import HTTPBasicAuth
+import analytics_report  # Import the analytics_report.py file
 
 app = Flask(__name__, template_folder="templates")
 
@@ -198,11 +199,11 @@ def results_for_domain(domain):
         "resources": row[3],
         "thank_you": row[4]
     }
-    analytics_data = {
-        "labels": ["Users", "Blogs", "Resources", "Thank-You Pages"],
-        "values": [row[1], row[2], row[3], row[4]]
-    }
-    return render_template("results.html", result=result_data, analytics=analytics_data)
+
+    # Fetch Google Analytics data
+    analytics_data = analytics_report.report  # Assuming analytics_report.report contains the data
+
+    return render_template("results.html", result=result_data, analytics_data=analytics_data)
 
 @app.route("/analytics")
 def analytics():
@@ -401,6 +402,19 @@ def api_add_user():
 @app.route('/user-management')
 def user_management():
     return render_template('user-management.html')
+
+# ----------------------Google Analytics API ----------------------
+
+# Run analytics_report.py to get the report data
+report = analytics_report.report
+
+@app.route("/api/analytics")
+def analytics_api():
+    return jsonify(report)
+
+@app.route("/google-analytics")
+def serve_analytics_page():
+    return render_template("google-analytics.html", analytics_data=report)  # Pass the data to the template
 
 # ---------------------- Main ----------------------
 

@@ -102,7 +102,7 @@ def fetch_and_store(domain_info):
         # Fetch data via clean URLs plus params
         users = fetch_users_once(f"{base_url}/wp-json/custom/v1/users", auth)
         blogs = fetch_all_items(f"{base_url}/wp-json/wp/v2/posts", auth)
-        pages = fetch_all_items(f"{base_url}/wp-json/wp/v2/pages", auth)
+        pages = fetch_all_items(f"{base_url}/wp-json/wp/v2/resources", auth)
 
         thank_you_pages = sum(
             1 for p in pages
