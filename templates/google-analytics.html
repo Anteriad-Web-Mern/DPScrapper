@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="../static/styles/global.css" />
+  <script src="../static/components/header.js" defer></script>
+  <script src="../static/components/sidebar.js" defer></script>
+  <script src="../static/components/footer.js" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="h-full bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+  <app-header></app-header>
+  <div class="flex flex-1 overflow-hidden">
+    <app-sidebar class="w-64 bg-white border-r border-gray-200"></app-sidebar>
+    <main class="flex-1 p-6 overflow-y-auto">
+      <h1 class="text-3xl font-semibold mb-6">Google Analytics Overview</h1>
+
+      <!-- Top Pages by Pageviews -->
+      <div class="bg-white p-6 mb-10 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Top Pages by Pageviews</h2>
+        <div class="w-full h-96">
+          <canvas id="topPagesChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Daily Traffic Trend -->
+      <div class="bg-white p-6 mb-10 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Daily Traffic Trend</h2>
+        <div class="w-full h-96">
+          <canvas id="dailyTrafficChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Traffic Sources -->
+      <div class="bg-white p-6 mb-10 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Traffic Sources</h2>
+        <div class="w-full h-96">
+          <canvas id="trafficSourcesChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Geo-location of Users -->
+      <div class="bg-white p-6 mb-10 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Geo-location of Users</h2>
+        <div class="w-full h-96">
+          <canvas id="geoLocationChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Bounce Rate -->
+      <div class="bg-white p-6 mb-10 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Bounce Rate</h2>
+        <p class="text-gray-700 text-base" id="bounceRateText">Loading...</p>
+      </div>
+
+      <!-- Average Session Duration -->
+      <div class="bg-white p-6 mb-10 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Average Session Duration</h2>
+        <p class="text-gray-700 text-base" id="avgTimeText">Loading...</p>
+      </div>
+
+      <!-- Chart Script -->
+      <script>
+        const analyticsData = JSON.parse('{{ analytics_data | tojson | safe }}');
+
+        // Top Pages Chart
+        new Chart(document.getElementById('topPagesChart').getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: analyticsData.top_pages.map(item => item.pagePath),
+            datasets: [{
+              label: 'Pageviews',
+              data: analyticsData.top_pages.map(item => item.screenPageViews),
+              backgroundColor: 'rgba(54, 162, 235, 0.7)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Pageviews'
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Page Path'
+                }
+              }
+            }
+          }
+        });
+
+        // Daily Traffic Chart
+        new Chart(document.getElementById('dailyTrafficChart').getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: analyticsData.daily_traffic.map(item => item.date),
+            datasets: [{
+              label: 'Sessions',
+              data: analyticsData.daily_traffic.map(item => item.sessions),
+              borderColor: 'rgba(255, 99, 132, 1)',
+              backgroundColor: 'rgba(255, 99, 132, 0.2)',
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Sessions'
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Date'
+                }
+              }
+            }
+          }
+        });
+
+        // Traffic Sources Chart
+        new Chart(document.getElementById('trafficSourcesChart').getContext('2d'), {
+          type: 'pie',
+          data: {
+            labels: analyticsData.traffic_sources.map(item => item.sessionSourceMedium),
+            datasets: [{
+              label: 'Sessions',
+              data: analyticsData.traffic_sources.map(item => item.sessions),
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 206, 86, 0.7)',
+                'rgba(75, 192, 192, 0.7)',
+                'rgba(153, 102, 255, 0.7)',
+                'rgba(255, 159, 64, 0.7)'
+              ],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                align: 'center'
+              }
+            }
+          }
+        });
+
+        // Geo-location Chart
+        new Chart(document.getElementById('geoLocationChart').getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: analyticsData.geo_location.map(item => item.country),
+            datasets: [{
+              label: 'Active Users',
+              data: analyticsData.geo_location.map(item => item.activeUsers),
+              backgroundColor: 'rgba(75, 192, 192, 0.7)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Active Users'
+                }
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Country'
+                }
+              }
+            }
+          }
+        });
+
+        // Display Bounce Rate
+        document.getElementById('bounceRateText').textContent = analyticsData.bounce_rate.length > 0 ? `${analyticsData.bounce_rate[0].bounceRate}%` : 'No data available';
+
+        // Display Average Session Duration
+        document.getElementById('avgTimeText').textContent = analyticsData.average_time_on_page.length > 0 ? `${parseFloat(analyticsData.average_time_on_page[0].averageSessionDuration).toFixed(2)} seconds` : 'No data available';
+      </script>
+    </main>
+  </div>
+  <app-footer></app-footer>
+</body>
+
+</html>

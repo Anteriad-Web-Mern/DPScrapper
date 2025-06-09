@@ -46,3 +46,6 @@ build/
 #SQLite database files
 *.sqlite3
 *.db
+
+#service files
+service-account.json

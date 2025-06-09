@@ -1,32 +1,33 @@
+from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
-from google.analytics.data_v1beta.types import (
-    DateRange, Dimension, Metric, RunReportRequest, OrderBy
-)
+from google.analytics.data_v1beta.types import RunReportRequest, DateRange, Metric, Dimension, OrderBy
 import os
 import json
 
-# Step 1: Set service account credentials
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "service-account.json"
-
-# Step 2: Initialize client
-client = BetaAnalyticsDataClient()
-
-# Replace with your GA4 property ID
+SCOPES = ["https://www.googleapis.com/auth/analytics.readonly"]
+KEY_FILE = "service-account.json"
 PROPERTY_ID = "345074992"
 
+credentials = service_account.Credentials.from_service_account_file(
+    KEY_FILE,
+    scopes=SCOPES
+)
+client = BetaAnalyticsDataClient(credentials=credentials)
 
 def fetch_report(request: RunReportRequest):
-    response = client.run_report(request)
-    headers = [header.name for header in response.dimension_headers] + \
-              [header.name for header in response.metric_headers]
-    
-    data = [
-        dict(zip(headers, [v.value for v in list(row.dimension_values) + list(row.metric_values)]))
-        for row in response.rows
-    ]
-    return data
-
-
+    try:
+        response = client.run_report(request)
+        headers = [header.name for header in response.dimension_headers] + \
+                  [header.name for header in response.metric_headers]
+        
+        data = [
+            dict(zip(headers, [v.value for v in list(row.dimension_values) + list(row.metric_values)]))
+            for row in response.rows
+        ]
+        return data
+    except Exception as e:
+        print(f"Error fetching report: {e}")
+        return []
 
 # Report 1: Top Pages by Pageviews
 top_pages = fetch_report(RunReportRequest(
@@ -61,7 +62,6 @@ geo_location = fetch_report(RunReportRequest(
     metrics=[Metric(name="activeUsers")],
     date_ranges=[DateRange(start_date="7daysAgo", end_date="today")]
 ))
-
 
 # Report 5: Post Views (alias for Top Pages)
 post_views = top_pages

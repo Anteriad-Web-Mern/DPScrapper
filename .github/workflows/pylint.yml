@@ -1,0 +1,27 @@
+name: Pylint
+
+on: [push, pull_request]
+
+jobs:
+  pylint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+      - run: |
+          python -m pip install --upgrade pip
+          pip install google-auth google-analytics-data flask flask-cors flask-mail mysql-connector-python plotly requests
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint
+          pip install -r requirements.txt # Install project dependencies
+      - name: Analysing the code with pylint
+        run: |
+          pylint --fail-under=8.0 $(git ls-files '*.py') # Fail if score is below 8.0

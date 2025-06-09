@@ -8,7 +8,6 @@ class AppSidebar extends HTMLElement {
                 <a href="/results" class="block rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium focus:ring-2 focus:ring-primary">Results</a>
                 <a href="/analytics" class="block rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium focus:ring-2 focus:ring-primary">Analytics</a>
                 <a href="/logs" class="block rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium focus:ring-2 focus:ring-primary">Logs</a>
-
                 <div class="collapsible">
                     <button type="button" class="block w-full text-left rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground transition-colors font-medium focus:ring-2 focus:ring-primary">
                         User Management
