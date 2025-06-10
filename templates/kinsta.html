@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kinsta Scraper</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: sans-serif; }
+        #results { margin-top: 20px; border: 1px solid #ccc; padding: 10px; }
+        .domain-results { margin-bottom: 20px; border: 1px solid #aaa; padding: 10px; }
+        .domain-title { font-weight: bold; margin-bottom: 5px; }
+        .cache-button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kinsta Scraper</h1>
+    <button id="scrapeButton">Scrape All Domains</button>
+
+    <div id="results"></div>
+
+    <script>
+        $(document).ready(function() {
+            $("#scrapeButton").click(function() {
+                $("#results").empty(); // Clear previous results
+                $.ajax({
+                    url: '/scrape',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    success: function(response) {
+                        // Display results for each domain
+                        $.each(response, function(domain, data) {
+                            var domainResultsDiv = $("<div class='domain-results'>");
+                            domainResultsDiv.append("<div class='domain-title'>" + domain + "</div>");
+                            domainResultsDiv.append("<pre>" + JSON.stringify(data, null, 2) + "</pre>");
+
+                            // Add Clear Cache button for each domain
+                            var clearCacheButton = $("<button class='cache-button'>Clear Cache</button>");
+                            clearCacheButton.click(function() {
+                                clearCache(domain);
+                            });
+                            domainResultsDiv.append(clearCacheButton);
+
+                            $("#results").append(domainResultsDiv);
+                        });
+                    },
+                    error: function(error) {
+                        $("#results").text("Error: " + JSON.stringify(error));
+                    }
+                });
+            });
+
+            function clearCache(domain) {
+                $.ajax({
+                    url: '/clear-cache/' + domain,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    success: function(response) {
+                        alert("Cache cleared successfully for " + domain + ": " + response.message);
+                    },
+                    error: function(error) {
+                        alert("Error clearing cache for " + domain + ": " + JSON.stringify(error));
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

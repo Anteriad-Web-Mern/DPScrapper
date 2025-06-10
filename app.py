@@ -12,8 +12,17 @@ from domain_utils import load_domains, add_domain
 import requests
 from requests.auth import HTTPBasicAuth
 import analytics_report  # Import the analytics_report.py file
+import subprocess
+import time  # Import the time module
+import logging
 
 app = Flask(__name__, template_folder="templates")
+CORS(app)  # Enable CORS for all routes
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 
 # MySQL connection config
 MYSQL_CONFIG = {
@@ -22,6 +31,22 @@ MYSQL_CONFIG = {
     'password': 'hritik1234',
     'database': 'wordpress_data',
 }
+
+KINSTA_BASE_URL = "https://api.kinsta.com/v2"
+
+def get_kinsta_headers(api_key):
+    return {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+# Load domains configuration from JSON file
+try:
+    with open("domain_config.json", "r") as f:
+        DOMAINS_CONFIG = json.load(f)
+except FileNotFoundError:
+    print("Error: domain_config.json not found. Please create this file.")
+    DOMAINS_CONFIG = []  # Initialize to an empty list to prevent further errors
 
 def get_mysql_conn():
     return mysql.connector.connect(**MYSQL_CONFIG)
@@ -51,6 +76,164 @@ def get_all_tasks():
         return [{"id": r[0], "task_name": r[1], "domain": r[2], "status": r[3]} for r in rows]
     except Exception:
         return []
+
+# ---------------------- Scrapy Trigger ----------------------
+def run_scrapy_spider(domain_config):
+    try:
+        api_key = domain_config["api_key"]
+        site_id = domain_config["site_id"]
+        domain = domain_config["domain"]
+
+        scrapy_command = [
+            "/mnt/c/Users/hrsharma/Desktop/WebSrapper/DPScrapper/venv/bin/scrapy", "crawl", "kinsta",
+            "-a", f"kinsta_api_key={api_key}",
+            "-a", f"site_id={site_id}",
+            "-o", f"output_{domain}.json"
+        ]
+        subprocess.run(scrapy_command, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Scrapy error: {e}")
+
+# ---------------------- Kinsta API Routes ----------------------
+
+@app.route("/clear-cache/<string:domain>", methods=["POST"])
+def clear_site_cache(domain):
+    domain_config = next((d for d in DOMAINS_CONFIG if d["domain"] == domain), None)
+    if not domain_config:
+        return jsonify({"error": "Domain config not found"}), 404
+
+    site_id = domain_config.get('site_id')
+    environment_id = domain_config.get('environment_id')
+    api_key = domain_config.get('api_key')
+
+    if not site_id:
+        return jsonify({"error": "Site ID not found in domain config"}), 400
+
+    if not environment_id:
+        return jsonify({"error": "Environment ID not found in domain config"}), 400
+
+    url = f"{KINSTA_BASE_URL}/sites/tools/clear-cache"
+    headers = get_kinsta_headers(api_key)
+
+    payload = {
+        "environment_id": environment_id
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+
+        if response.status_code == 202:
+            # Cache clearing is in progress
+            operation_id = response.json().get("operation_id")
+            if operation_id:
+                # Poll the operation status until it's completed
+                status = poll_operation_status(api_key, operation_id)
+                return jsonify({"message": status})
+            else:
+                return jsonify({"error": "Cache clearing in progress, but operation_id not found", "response": response.text}), 500
+        else:
+            return jsonify({"error": "Failed to clear cache", "response": response.text}), response.status_code
+    except requests.exceptions.RequestException as e:
+        return jsonify({"error": f"Request failed: {str(e)}"}), 500
+
+def poll_operation_status(api_key, operation_id, timeout=60, interval=5):
+    """
+    Polls the status of a Kinsta API operation until it's completed or a timeout is reached.
+    """
+    start_time = time.time()
+    headers = get_kinsta_headers(api_key)
+    while True:
+        # Check if the timeout has been reached
+        if time.time() - start_time > timeout:
+            return "Cache clearing timed out."
+
+        # Poll the operation status
+        url = f"{KINSTA_BASE_URL}/operations/{operation_id}"
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+            operation_data = response.json()
+            status = operation_data.get("status")
+
+            if status == "complete":
+                return "Cache cleared successfully"
+            elif status == "failed":
+                return f"Cache clearing failed: {operation_data.get('error', 'Unknown error')}"
+            else:
+                print(f"Cache clearing status: {status}.  Checking again in {interval} seconds...")
+                time.sleep(interval)  # Wait before polling again
+        except requests.exceptions.RequestException as e:
+            return f"Error checking cache clearing status: {str(e)}"
+        except json.JSONDecodeError:
+            return "Error decoding JSON response when checking cache clearing status."
+
+@app.route("/plugins/<string:domain>", methods=["GET"])
+def get_site_plugins(domain):
+    logger.info(f"Attempting to fetch plugins for domain: {domain}")
+    domain_config = next((d for d in DOMAINS_CONFIG if d["domain"] == domain), None)
+    if not domain_config:
+        logger.warning(f"Domain config not found for domain: {domain}")
+        return jsonify({"error": "Domain config not found"}), 404
+
+    environment_id = domain_config.get('environment_id')
+    api_key = domain_config.get('api_key')  # Get the API key
+    if not environment_id:
+        logger.error(f"Environment ID not found in domain config for domain: {domain}")
+        return jsonify({"error": "Environment ID not found in domain config"}), 400
+
+    url = f"{KINSTA_BASE_URL}/sites/environments/{environment_id}/plugins"
+    try:
+        logger.info(f"Attempting to fetch plugins from: {url}")
+        response = requests.get(url, headers=get_kinsta_headers(api_key))
+
+        if response.status_code == 200:
+            logger.info(f"Successfully fetched plugins from: {url}")
+            plugins_data = response.json()
+            if "environment" in plugins_data and "container_info" in plugins_data["environment"] and "wp_plugins" in plugins_data["environment"]["container_info"]:
+                return jsonify(plugins_data["environment"]["container_info"]["wp_plugins"]["data"])
+            else:
+                logger.warning("Unexpected JSON structure in Kinsta API response")
+                return jsonify({"error": "Unexpected JSON structure in Kinsta API response"}), 500
+        else:
+            logger.error(f"Failed to fetch plugins. Status code: {response.status_code}, Response: {response.text}")
+            return jsonify({"error": "Failed to fetch plugins", "response": response.text}), response.status_code
+    except requests.exceptions.RequestException as e:
+        logger.exception(f"Request failed: {str(e)}")
+        return jsonify({"error": f"Request failed: {str(e)}"}), 500
+
+@app.route("/themes/<string:domain>", methods=["GET"])
+def get_site_themes(domain):
+    logger.info(f"Attempting to fetch themes for domain: {domain}")
+    domain_config = next((d for d in DOMAINS_CONFIG if d["domain"] == domain), None)
+    if not domain_config:
+        logger.warning(f"Domain config not found for domain: {domain}")
+        return jsonify({"error": "Domain config not found"}), 404
+
+    environment_id = domain_config.get('environment_id')
+    api_key = domain_config.get('api_key')  # Get the API key
+    if not environment_id:
+        logger.error(f"Environment ID not found in domain config for domain: {domain}")
+        return jsonify({"error": "Environment ID not found in domain config"}), 400
+
+    url = f"{KINSTA_BASE_URL}/sites/environments/{environment_id}/themes"
+    try:
+        logger.info(f"Attempting to fetch themes from: {url}")
+        response = requests.get(url, headers=get_kinsta_headers(api_key))
+
+        if response.status_code == 200:
+            logger.info(f"Successfully fetched themes from: {url}")
+            themes_data = response.json()
+            if "environment" in themes_data and "container_info" in themes_data["environment"] and "wp_themes" in themes_data["environment"]["container_info"]:
+                 return jsonify(themes_data["environment"]["container_info"]["wp_themes"]["data"])
+            else:
+                logger.warning("Unexpected JSON structure in Kinsta API response")
+                return jsonify({"error": "Unexpected JSON structure in Kinsta API response"}), 500
+        else:
+            logger.error(f"Failed to fetch themes. Status code: {response.status_code}, Response: {response.text}")
+            return jsonify({"error": "Failed to fetch themes", "response": response.text}), response.status_code
+    except requests.exceptions.RequestException as e:
+        logger.exception(f"Request failed: {str(e)}")
+        return jsonify({"error": f"Request failed: {str(e)}"}), 500
 
 # ---------------------- Routes ----------------------
 
@@ -273,7 +456,6 @@ def bulk_add_user():
 
         with open('domains.json') as f:
             domains = json.load(f)
-
         results = []
         registered = False
         for domain in domains:
@@ -415,6 +597,26 @@ def analytics_api():
 @app.route("/google-analytics")
 def serve_analytics_page():
     return render_template("google-analytics.html", analytics_data=report)  # Pass the data to the template
+
+# API endpoint to trigger the scraping for all domains
+@app.route('/scrape', methods=['POST'])
+def scrape():
+    all_results = {}
+    for domain_config in DOMAINS_CONFIG:
+        domain = domain_config["domain"]
+        results = run_scrapy_spider(domain_config)
+        all_results[domain] = results  # Store results by domain
+
+    return jsonify(all_results)
+
+# Serve the frontend
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route("/kinsta")
+def kinsta():
+    return render_template("kinsta.html")
 
 # ---------------------- Main ----------------------
 

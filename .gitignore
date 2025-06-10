@@ -49,3 +49,9 @@ build/
 
 #service files
 service-account.json
+
+# Configuration files
+domain_config.json
+
+# domains files
+domains.json

@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Scraping Tasks</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='styles/global.css') }}">
@@ -70,12 +71,43 @@
             <td id="status-${index}" class="p-3 text-green-600">Idle</td>
             <td class="p-3 space-x-2">
               <a href="/results/${domain}" class="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">View Results</a>
+              <button class="clear-cache-btn inline-block bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600" data-domain="${domain}">Clear Cache</button>
             </td>
           `;
           tbody.appendChild(tr);
         });
+
+        // Add event listeners to the clear cache buttons
+        document.querySelectorAll('.clear-cache-btn').forEach(button => {
+          button.addEventListener('click', function() {
+            const domain = this.dataset.domain;
+            clearCache(domain);
+          });
+        });
+
       } catch (error) {
         console.error("Error fetching domains:", error);
+      }
+    }
+
+    async function clearCache(domain) {
+      try {
+        const response = await fetch(`/clear-cache/${domain}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          alert(`Cache cleared successfully for ${domain}: ${data.message}`);
+        } else {
+          alert(`Error clearing cache for ${domain}: ${data.error}`);
+        }
+      } catch (error) {
+        console.error("Error clearing cache:", error);
+        alert(`Error clearing cache for ${domain}: ${error}`);
       }
     }
 
