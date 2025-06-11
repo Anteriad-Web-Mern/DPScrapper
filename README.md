@@ -2,6 +2,20 @@
 
 **DPScrapper** is a Python-based web scraping and automation project built to extract and manage data from multiple WordPress sites efficiently. It also includes integration with **Google Analytics (GA4)** to fetch analytical reports and a **cache-clearing** feature for Kinsta-hosted sites.
 
+
+![MIT License](https://img.shields.io/github/license/Anteriad-Web-Mern/DPScrapper)
+![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+![JavaScript](https://img.shields.io/badge/logo-javascript-blue?logo=javascript)
+
+---
+## Table of Contents
+- [Features](#features)
+- [Setup Instructions](#setup-instructions)
+- [Usage](#how-to-use)
+- [API Endpoints](#api-endpoints)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 ---
 
 ## 🚀 Features
@@ -88,10 +102,14 @@ python analytics_report.py
 
 ### 4.📡 API Endpoints
 
-- Endpoint	Method	Description
+| Endpoint                   | Method | Description                        |
+|----------------------------|--------|------------------------------------|
+| /clear-cache/<domain>      | POST   | Clears Kinsta cache for site       |
+| /bulk-add-user             | POST   | Adds users to all domains          |
+
+#### Example
 ```bash
-/clear-cache/<domain>	POST	//Clears Kinsta cache for a given site
-/bulk-add-user	POST	//Adds users to all domains
+curl -X POST http://localhost:5000/clear-cache/example.com
 ```
 
 ### 5. 📈 Google Analytics Integration
@@ -128,4 +146,5 @@ git push origin main
 ```bash
 GitHub: https://github.com/Anteriad-Web-Mern
 ```
+
 ---
