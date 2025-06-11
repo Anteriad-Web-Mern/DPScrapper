@@ -1,6 +1,6 @@
 # 🕸️ DPScrapper
 
-**DPScrapper** is a Python-based web scraping and automation project built to extract and manage data from multiple WordPress sites efficiently. It also includes integration with Google Analytics (GA4) to fetch analytical reports and a cache-clearing feature for Kinsta-hosted sites.
+**DPScrapper** is a Python-based web scraping and automation project built to extract and manage data from multiple WordPress sites efficiently. It also includes integration with **Google Analytics (GA4)** to fetch analytical reports and a **cache-clearing** feature for Kinsta-hosted sites.
 
 ---
 
