@@ -9,7 +9,7 @@
 
 ---
 ## Table of Contents
-- [Features](#features)
+- [Features](#Features)
 - [Setup Instructions](#setup-instructions)
 - [Usage](#how-to-use)
 - [API Endpoints](#api-endpoints)
