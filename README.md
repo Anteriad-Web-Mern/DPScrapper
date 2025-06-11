@@ -91,7 +91,13 @@ python app.py
 ### 2. Clear Kinsta Cache
 
 ```bash
-curl -X POST http://localhost:5000/clear-cache/yourdomain.com
+curl -i -X POST \
+  https://api.kinsta.com/v2/sites/tools/clear-cache \
+  -H 'Authorization: Bearer <Token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "environment_id": "ENV-ID"
+  }'
 ```
 
 ### 3. Generate Google Analytics Report
