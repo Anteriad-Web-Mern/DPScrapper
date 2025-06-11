@@ -466,7 +466,7 @@ def bulk_add_user():
                 'email': email,
                 'password': password,
                 'role': role
-            }
+            }   
 
             try:
                 resp = requests.post(url, auth=auth, json=data, timeout=10)
