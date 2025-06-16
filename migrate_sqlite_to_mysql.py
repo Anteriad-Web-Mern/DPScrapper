@@ -1,5 +1,10 @@
 import sqlite3
 import mysql.connector
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # SQLite DB paths
 DB_MAIN = "wordpress_data.db"
@@ -7,10 +12,10 @@ DB_CREDENTIALS = "credentials.db"
 
 # MySQL connection config
 MYSQL_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'hritik1234',
-    'database': 'wordpress_data',
+    'host': os.environ.get('MYSQL_HOST', 'localhost'),
+    'user': os.environ.get('MYSQL_USER', 'root'),
+    'password': os.environ.get('MYSQL_PASSWORD', 'hritik1234'),
+    'database': os.environ.get('MYSQL_DATABASE', 'wordpress_data'),
 }
 
 # Connect to MySQL
