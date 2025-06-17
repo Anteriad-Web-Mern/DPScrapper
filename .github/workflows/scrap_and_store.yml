@@ -3,7 +3,6 @@ name: Scrape and Store Data
 on:
   schedule:
     - cron: '0 0 * * *'
-    - cron: '5 10 * * *'
     - cron: '0 6 * * 0'
   workflow_dispatch:
 
@@ -54,7 +53,7 @@ jobs:
 
       - name: Recreate domains.json from GitHub secret
         run: |
-          ${{ secrets.DOMAINS_JSON_B64 }} | base64 -d -w 0 > domains.json
+          echo "${{ secrets.DOMAINS_JSON_B64 }}" | base64 -d -w 0 > domains.json
 
       - name: Inspect domains.json
         run: cat domains.json > domains.json.output
