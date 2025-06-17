@@ -1,7 +1,9 @@
 name: Scrape and Store Data
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs daily at midnight
+    - cron: '0 0 * * *'    # Runs daily at midnight UTC
+    - cron: '5 10 * * *'   # Runs daily at noon UTC
+    - cron: '0 6 * * 0'    # Runs every Sunday at 6:00 AM UTC
   workflow_dispatch:  # Allows manual triggering
 jobs:
   scrape_and_store:
