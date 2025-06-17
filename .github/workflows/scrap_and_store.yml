@@ -54,16 +54,14 @@ jobs:
 
       - name: Recreate domains.json from GitHub secret
         run: |
-          echo "${{ secrets.DOMAINS_JSON_B64 }}" | base64 --decode > domains.json
-
-      # filepath: /mnt/c/Users/hrsharma/Desktop/WebSrapper/DPScrapper/.github/workflows/scrap_and_store.yml
-      - name: Recreate domains.json from GitHub secret
-        run: |
-          echo "${{ secrets.DOMAINS_JSON_B64 }}" | base64 --decode > domains.json
+          echo "${{ secrets.DOMAINS_JSON_B64 }}" | base64 -d -w 0 > domains.json
 
       - name: Inspect domains.json
-        run: cat domains.json
+        run: cat domains.json > domains.json.output
         
+      - name: Print domains.json output
+        run: cat domains.json.output
+
       - name: Run the database migration
         run: python migrate_sqlite_to_mysql.py
         env:
