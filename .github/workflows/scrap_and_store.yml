@@ -52,6 +52,13 @@ jobs:
             sleep 5
           done
 
+      - name: Recreate domains.json from GitHub secret
+        run: |
+          echo "$DOMAINS_JSON_B64" | base64 --decode > domains.json
+        env:
+          DOMAINS_JSON_B64: ${{ secrets.DOMAINS_JSON_B64 }}
+
+
       - name: Run the database migration
         run: python migrate_sqlite_to_mysql.py
         env:
