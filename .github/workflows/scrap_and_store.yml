@@ -7,17 +7,23 @@ on:
     - cron: '0 6 * * 0'
   workflow_dispatch:
 
+env:
+  MYSQL_HOST: 127.0.0.1
+  MYSQL_DATABASE: wordpress_data
+  MYSQL_USER: root
+
 jobs:
   scrape_and_store:
     runs-on: ubuntu-latest
+    environment: production   # <-- Specify your environment name here
 
     services:
       mysql:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ env.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         ports:
           - 3306:3306
@@ -38,27 +44,27 @@ jobs:
 
       - name: Wait for MySQL to be ready
         run: |
-          for i in {1..10}; do
-            if mysql -h127.0.0.1 -u"${{ secrets.MYSQL_USER }}" -p"${{ secrets.MYSQL_PASSWORD }}" -e "SELECT 1" ${{ secrets.MYSQL_DATABASE }}; then
+          for i in {1..20}; do
+            if mysql -h${{ env.MYSQL_HOST }} -u"${{ env.MYSQL_USER }}" -p"${{ secrets.MYSQL_PASSWORD }}" -e "SELECT 1" ${{ env.MYSQL_DATABASE }}; then
               echo "MySQL is up and ready!"
               break
             fi
-            echo "Waiting for MySQL... ($i/10)"
+            echo "Waiting for MySQL... ($i/20)"
             sleep 5
           done
 
       - name: Run the database migration
         run: python migrate_sqlite_to_mysql.py
         env:
-          MYSQL_HOST: 127.0.0.1
-          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_HOST: ${{ env.MYSQL_HOST }}
+          MYSQL_USER: ${{ env.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
 
       - name: Run the scraper
         run: python fetch_data.py
         env:
-          MYSQL_HOST: 127.0.0.1
-          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_HOST: ${{ env.MYSQL_HOST }}
+          MYSQL_USER: ${{ env.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
