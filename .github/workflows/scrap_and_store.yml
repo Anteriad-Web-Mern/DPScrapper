@@ -44,14 +44,16 @@ jobs:
 
       - name: Wait for MySQL to be ready
         run: |
+          export MYSQL_PWD="${{ secrets.MYSQL_PASSWORD }}"
           for i in {1..20}; do
-            if mysql -h${{ env.MYSQL_HOST }} -u"${{ env.MYSQL_USER }}" -p"${{secrets.MYSQL_PASSWORD}}" -e "SELECT 1 FROM ${{ env.MYSQL_DATABASE }}.domains LIMIT 1"; then
+            if mysql -h${{ env.MYSQL_HOST }} -u"${{ env.MYSQL_USER }}" -e "SELECT 1 FROM ${{ env.MYSQL_DATABASE }}.domains LIMIT 1"; then
               echo "MySQL is up and ready!"
               break
             fi
             echo "Waiting for MySQL... ($i/20)"
             sleep 5
           done
+          unset MYSQL_PWD
 
       - name: Run the database migration
         run: python migrate_sqlite_to_mysql.py
