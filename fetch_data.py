@@ -5,13 +5,17 @@ import threading
 import time
 import json
 import os
+from dotenv import load_dotenv
 
-# MySQL connection config
+# Load environment variables from .env file
+load_dotenv()
+
+# MySQL connection config (read from environment variables)
 MYSQL_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'hritik1234',
-    'database': 'wordpress_data',
+    'host': os.environ.get('MYSQL_HOST'),
+    'user': os.environ.get('MYSQL_USER'),
+    'password': os.environ.get('MYSQL_PASSWORD'),
+    'database': os.environ.get('MYSQL_DATABASE'),
 }
 
 # Path to the JSON file
@@ -40,111 +44,105 @@ def ensure_domains_table():
 
 
 def load_domains_from_json():
-    if not os.path.exists(DOMAINS_FILE):
-        print(f"❌ JSON file '{DOMAINS_FILE}' not found.")
-        return []
-    with open(DOMAINS_FILE, "r") as file:
-        return json.load(file)
-
-
-def fetch_all_items(base_url, auth):
-    items = []
-    page = 1
-    last_page_items = None
-
-    while True:
-        time.sleep(1)
-        try:
-            params = { 'per_page': 100, 'page': page }
-            response = requests.get(base_url, auth=auth, params=params, timeout=10)
-            print(f"Fetching {response.url}, Status: {response.status_code}")
-
-            if response.status_code in [400, 401, 404]:
-                break
-
-            page_items = response.json()
-            if not isinstance(page_items, list):
-                break
-
-            items.extend(page_items)
-            # stop if fewer results than per_page or page repeats
-            if len(page_items) < 100 or page_items == last_page_items:
-                break
-
-            last_page_items = page_items
-            page += 1
-        except requests.exceptions.RequestException as e:
-            print(f"❌ Error fetching {base_url}: {e}")
-            break
-    return items
-
-
-def fetch_users_once(url, auth):
+    """Loads domains from the domains.json file."""
     try:
-        response = requests.get(url, auth=auth, timeout=10)
-        print(f"Fetching {url}, Status: {response.status_code}")
-        if response.status_code == 200:
-            return response.json()
-        return []
+        with open(DOMAINS_FILE, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print(f"Error: {DOMAINS_FILE} not found.")
+        return []  # Return an empty list if the file is not found
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON from {DOMAINS_FILE}: {e}")
+        return []  # Return an empty list if there's a JSON decoding error
+
+
+def fetch_data_for_domain(domain_data):
+    """Fetches data for a single domain."""
+    domain = domain_data['domain']  # Extract the domain name
+    try:
+        # Fetch users
+        users_url = f"https://{domain}/wp-json/wp/v2/users"
+        users_response = requests.get(users_url)
+        users_count = len(users_response.json()) if users_response.status_code == 200 else 0
+
+        # Fetch blogs
+        blogs_url = f"https://{domain}/wp-json/wp/v2/posts"
+        blogs_response = requests.get(blogs_url)
+        blogs_count = len(blogs_response.json()) if blogs_response.status_code == 200 else 0
+
+        # Fetch resources
+        resources_url = f"https://{domain}/wp-json/wp/v2/media"
+        resources_response = requests.get(resources_url)
+        resources_count = len(resources_response.json()) if resources_response.status_code == 200 else 0
+
+        # Thank you pages
+        thank_you_url = f"https://{domain}/wp-json/wp/v2/pages?search=thank%20you"
+        thank_you_response = requests.get(thank_you_url)
+        thank_you_count = len(thank_you_response.json()) if thank_you_response.status_code == 200 else 0
+
+        return {
+            'domain': domain,
+            'users': users_count,
+            'blogs': blogs_count,
+            'resources': resources_count,
+            'thank_you': thank_you_count
+        }
     except Exception as e:
-        print(f"❌ Error fetching users: {e}")
-        return []
+        print(f"Error fetching data for {domain}: {e}")
+        return None
 
 
-def fetch_and_store(domain_info):
-    domain = domain_info["domain"]
-    base_url = domain_info["url"].rstrip('/')
-    username = domain_info.get("username", "")
-    password = domain_info.get("password", "")
-    auth = HTTPBasicAuth(username, password)
-
+def store_data_in_mysql(data):
+    """Stores the fetched data in the MySQL database."""
+    if data is None:
+        print("Skipping storage due to None data.")
+        return
     try:
-        # Fetch data via clean URLs plus params
-        users = fetch_users_once(f"{base_url}/wp-json/custom/v1/users", auth)
-        blogs = fetch_all_items(f"{base_url}/wp-json/wp/v2/posts", auth)
-        pages = fetch_all_items(f"{base_url}/wp-json/wp/v2/resources", auth)
-
-        thank_you_pages = sum(
-            1 for p in pages
-            if isinstance(p, dict) and 'slug' in p and 'thank-you' in p['slug'].lower()
-        )
-
         conn = get_mysql_conn()
         cursor = conn.cursor()
-        cursor.execute(
-            '''
-                REPLACE INTO domains (domain, users, blogs, resources, thank_you)
-                VALUES (%s, %s, %s, %s, %s)
-            ''',
-            (domain, len(users), len(blogs), len(pages), thank_you_pages)
-        )
-        conn.commit()
-        conn.close()
-        print(f"✅ Data stored for {domain}")
 
-    except requests.exceptions.RequestException as e:
-        print(f"❌ Error fetching {domain}: {e}")
-    except mysql.connector.Error as e:
-        print(f"❌ Database error for {domain}: {e}")
+        query = """
+            INSERT INTO domains (domain, users, blogs, resources, thank_you)
+            VALUES (%s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                users = %s,
+                blogs = %s,
+                resources = %s,
+                thank_you = %s
+        """
+        values = (
+            data['domain'], data['users'], data['blogs'], data['resources'], data['thank_you'],
+            data['users'], data['blogs'], data['resources'], data['thank_you']
+        )
+        cursor.execute(query, values)
+        conn.commit()
+        print(f"Data stored for {data['domain']}")
+    except Exception as e:
+        print(f"Error storing data in MySQL: {e}")
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
 
 
 def run_fetch():
-    ensure_domains_table()
+    """Main function to run the data fetching and storing process."""
     domains = load_domains_from_json()
     if not domains:
-        print("❌ No domains to scrape.")
+        print("No domains to fetch data for.")
         return
 
     threads = []
-    for domain_info in domains:
-        t = threading.Thread(target=fetch_and_store, args=(domain_info,))
-        t.start()
-        threads.append(t)
+    for domain_data in domains:
+        thread = threading.Thread(target=lambda d=domain_data: store_data_in_mysql(fetch_data_for_domain(d)))
+        threads.append(thread)
+        thread.start()
 
-    for t in threads:
-        t.join()
-    print("✅ Data fetching completed!")
+    for thread in threads:
+        thread.join()
+
+    print("Data fetching and storing complete.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_fetch()
