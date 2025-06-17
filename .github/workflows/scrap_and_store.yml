@@ -44,13 +44,13 @@ jobs:
 
       - name: Wait for MySQL to be ready
         run: |
-          export MYSQL_PWD="${{ secrets.MYSQL_PASSWORD }}"
-          for i in {1..20}; do
+          export MYSQL_PWD="hritik1234"
+          for i in {1..5}; do
             if mysql -hlocalhost -uroot -e "SELECT 1 FROM wordpress_data.domains LIMIT 1"; then
               echo "MySQL is up and ready!"
               break
             fi
-            echo "Waiting for MySQL... ($i/20)"
+            echo "Waiting for MySQL... ($i/5)"
             sleep 5
           done
           unset MYSQL_PWD
