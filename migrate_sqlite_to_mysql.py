@@ -20,7 +20,7 @@ MYSQL_CONFIG = {
 
 # Connect to MySQL
 mysql_conn = mysql.connector.connect(**MYSQL_CONFIG)
-mysql_cursor = mysql_conn.cursor()
+mysql_cursor = mysql_conn.cursor()  
 
 # --- Create tables in MySQL ---
 mysql_cursor.execute('''
