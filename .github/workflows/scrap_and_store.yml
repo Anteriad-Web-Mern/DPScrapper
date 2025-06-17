@@ -8,6 +8,19 @@ on:
 jobs:
   scrape_and_store:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0  # Use a MySQL 8.0 image
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: --health-check-interval=10s --health-check-timeout=5s --health-check-retries=3
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,9 +35,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Wait for MySQL to be ready
+        run: sleep 30  # Wait for 30 seconds
+
       - name: Setup MySQL connection
         run: |
-          echo "MYSQL_HOST=${{ secrets.MYSQL_HOST }}" >> $GITHUB_ENV
+          echo "MYSQL_HOST=127.0.0.1" >> $GITHUB_ENV
           echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> $GITHUB_ENV
           echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
           echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> $GITHUB_ENV
@@ -35,7 +51,7 @@ jobs:
           MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
           MYSQL_USER: ${{ secrets.MYSQL_USER }}
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}  
+          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
 
       - name: Run the scraper
         run: python fetch_data.py
