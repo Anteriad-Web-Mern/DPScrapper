@@ -42,18 +42,26 @@ jobs:
 
       - name: Wait for MySQL to be ready
         run: |
-          for i in {1..15}; do
+          for i in {1..5}; do
             if mysql -h127.0.0.1 -uroot -phritik1234 -e "SELECT 1;" > /dev/null 2>&1; then
               echo "MySQL is up and ready!"
               break
             fi
-            echo "Waiting for MySQL... ($i/15)"
+            echo "Waiting for MySQL... ($i/5)"
             sleep 5
           done
 
       - name: Recreate domains.json from GitHub secret
         run: |
-          echo "${{ secrets.DOMAINS_JSON_B64 }}" | base64 -d -w 0 > domains.json
+          echo "${{ secrets.DOMAINS_JSON_B64 }}" | base64 -d > domains.json
+
+      - name: Check if secret is set
+        run: |
+          if [ -z "${{ secrets.DOMAINS_JSON_B64 }}" ]; then
+            echo "❌ DOMAINS_JSON_B64 secret is not set!"
+            exit 1
+          fi
+
 
       - name: Inspect domains.json
         run: cat domains.json > domains.json.output
