@@ -19,7 +19,6 @@ jobs:
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         ports:
           - 3306:3306
-        options: --health-check-interval=10s --health-check-timeout=5s --health-check-retries=3
 
     steps:
       - name: Checkout code
