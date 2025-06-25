@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, render_template
 from utils.db import get_mysql_conn, get_all_tasks, execute_query
 import subprocess
+import os
+import json
 
 scraping_bp = Blueprint('scraping', __name__)
 
